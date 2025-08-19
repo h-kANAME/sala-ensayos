@@ -1,0 +1,274 @@
+.calendario-reservas {
+    padding: 1rem;
+}
+
+.calendario-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding: 1.5rem;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.calendario-header h2 {
+    margin: 0;
+    color: #333;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.controles-mes {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: #f8f9fa;
+    padding: 0.5rem;
+    border-radius: 8px;
+}
+
+.btn-mes {
+    padding: 0.5rem;
+    border: 1px solid #dee2e6;
+    background: white;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s;
+}
+
+.btn-mes:hover {
+    background: #667eea;
+    color: white;
+}
+
+.mes-actual {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #333;
+    min-width: 180px;
+    text-align: center;
+}
+
+.btn-nueva-reserva {
+    padding: 0.75rem 1.5rem;
+    background: #28a745;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background 0.3s;
+}
+
+.btn-nueva-reserva:hover {
+    background: #218838;
+}
+
+.reservas-info {
+    background: #e7f3ff;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    border-left: 4px solid #007bff;
+}
+
+.reservas-info p {
+    margin: 0;
+    color: #004085;
+    font-weight: 500;
+}
+
+.reservas-lista {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.reservas-lista h3 {
+    margin-top: 0;
+    color: #333;
+    border-bottom: 2px solid #667eea;
+    padding-bottom: 0.5rem;
+}
+
+.sin-reservas {
+    text-align: center;
+    padding: 3rem;
+    color: #6c757d;
+}
+
+.btn-crear-primera {
+    padding: 1rem 2rem;
+    background: #667eea;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    margin-top: 1rem;
+    transition: background 0.3s;
+}
+
+.btn-crear-primera:hover {
+    background: #5a67d8;
+}
+
+.reservas-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.reserva-item {
+    border: 1px solid #e9ecef;
+    border-radius: 10px;
+    padding: 1.5rem;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.reserva-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.reserva-item.pendiente {
+    border-left: 4px solid #ffc107;
+}
+
+.reserva-item.confirmada {
+    border-left: 4px solid #28a745;
+}
+
+.reserva-item.cancelada {
+    border-left: 4px solid #dc3545;
+}
+
+.reserva-item.completada {
+    border-left: 4px solid #17a2b8;
+}
+
+.reserva-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.reserva-header h4 {
+    margin: 0;
+    color: #333;
+    font-size: 1.2rem;
+}
+
+.badge-estado {
+    padding: 0.4rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.badge-estado.pendiente {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.badge-estado.confirmada {
+    background: #d4edda;
+    color: #155724;
+}
+
+.badge-estado.cancelada {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.badge-estado.completada {
+    background: #d1ecf1;
+    color: #0c5460;
+}
+
+.reserva-info {
+    margin-bottom: 1.5rem;
+}
+
+.reserva-info p {
+    margin: 0.5rem 0;
+    color: #555;
+    font-size: 0.95rem;
+}
+
+.reserva-info strong {
+    color: #333;
+}
+
+.reserva-acciones {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.btn-detalles, .btn-checkin {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.3s;
+}
+
+.btn-detalles {
+    background: #6c757d;
+    color: white;
+}
+
+.btn-detalles:hover {
+    background: #5a6268;
+}
+
+.btn-checkin {
+    background: #17a2b8;
+    color: white;
+}
+
+.btn-checkin:hover {
+    background: #138496;
+}
+
+.loading {
+    text-align: center;
+    padding: 3rem;
+    color: #666;
+    font-size: 1.1rem;
+}
+
+.error {
+    background: #f8d7da;
+    color: #721c24;
+    padding: 1.5rem;
+    border-radius: 8px;
+    text-align: center;
+    margin: 1rem 0;
+}
+
+.btn-reintentar {
+    margin-top: 1rem;
+    padding: 0.5rem 1.5rem;
+    background: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.btn-reintentar:hover {
+    background: #c82333;
+}

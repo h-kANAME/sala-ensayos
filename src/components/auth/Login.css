@@ -1,0 +1,119 @@
+.login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 1rem;
+}
+
+.login-card {
+    background: white;
+    padding: 2rem;
+    border-radius: 15px;
+    box-shadow: 0 10px 35px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    max-width: 400px;
+    animation: slideUp 0.5s ease;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.login-card h2 {
+    text-align: center;
+    margin-bottom: 1.5rem;
+    color: #333;
+    font-weight: 600;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #555;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.3s;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.form-group input:disabled {
+    background-color: #f8f9fa;
+    cursor: not-allowed;
+}
+
+.login-button {
+    width: 100%;
+    padding: 0.75rem;
+    background: #667eea;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s;
+    margin-bottom: 1.5rem;
+}
+
+.login-button:hover:not(:disabled) {
+    background: #5a67d8;
+}
+
+.login-button:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
+
+.error-message {
+    color: #e53e3e;
+    text-align: center;
+    margin: 1rem 0;
+    padding: 0.75rem;
+    background: #fed7d7;
+    border: 1px solid #feb2b2;
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+.demo-credentials {
+    background: #f7fafc;
+    padding: 1rem;
+    border-radius: 8px;
+    border-left: 4px solid #667eea;
+}
+
+.demo-credentials p {
+    margin: 0.25rem 0;
+    font-size: 0.9rem;
+    color: #4a5568;
+}
+
+.demo-credentials p:first-child {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}

@@ -1,0 +1,105 @@
+.checkin-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.btn-checkin {
+    padding: 0.5rem 1rem;
+    background: #28a745;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background 0.3s;
+}
+
+.btn-checkin:hover:not(:disabled) {
+    background: #218838;
+}
+
+.btn-checkin:disabled {
+    background: #6c757d;
+    cursor: not-allowed;
+}
+
+.btn-checkout {
+    padding: 0.4rem 0.8rem;
+    background: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: background 0.3s;
+}
+
+.btn-checkout:hover:not(:disabled) {
+    background: #c82333;
+}
+
+.btn-checkout:disabled {
+    background: #6c757d;
+    cursor: not-allowed;
+}
+
+.en-curso {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.badge-en-curso {
+    padding: 0.3rem 0.6rem;
+    background: #17a2b8;
+    color: white;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.badge-finalizada {
+    padding: 0.3rem 0.6rem;
+    background: #6c757d;
+    color: white;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.badge-ausente {
+    padding: 0.3rem 0.6rem;
+    background: #ffc107;
+    color: #212529;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.tiempo {
+    font-size: 0.9rem;
+    color: #28a745;
+    font-weight: 600;
+}
+
+.checkin-error {
+    background: #f8d7da;
+    color: #721c24;
+    padding: 0.5rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.btn-cerrar-error {
+    background: none;
+    border: none;
+    color: #721c24;
+    cursor: pointer;
+    font-weight: bold;
+}
