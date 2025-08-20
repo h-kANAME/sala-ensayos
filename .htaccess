@@ -1,17 +1,15 @@
-# Habilitar rewrite engine
 RewriteEngine On
 
-# Headers CORS
+# CORS Headers
 Header always set Access-Control-Allow-Origin "http://localhost:3000"
 Header always set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
 Header always set Access-Control-Allow-Headers "Origin, Content-Type, X-Auth-Token, Authorization, Accept, charset, boundary, Content-Length"
 Header always set Access-Control-Allow-Credentials "true"
 
-# Manejar preflight OPTIONS requests
+# Preflight requests
 RewriteCond %{REQUEST_METHOD} OPTIONS
 RewriteRule ^(.*)$ $1 [R=200,L]
 
-# Para PHP, asegurar que se procesen correctamente
-<FilesMatch "\.php$">
-    SetHandler application/x-httpd-php
-</FilesMatch>
+# Mostrar errores PHP
+php_flag display_errors on
+php_value error_reporting E_ALL

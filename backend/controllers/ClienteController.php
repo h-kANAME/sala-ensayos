@@ -1,8 +1,8 @@
 <?php
-header('Access-Control-Allow-Origin: http://localhost:3000');
-header('Content-Type: application/json');
-header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
-header('Access-Control-Allow-Headers: Authorization, Content-Type');
+// header('Access-Control-Allow-Origin: http://localhost:3000');
+// header('Content-Type: application/json');
+// header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
+// header('Access-Control-Allow-Headers: Authorization, Content-Type');
 
 include_once '../config/cors.php';
 include_once '../config/database.php';
