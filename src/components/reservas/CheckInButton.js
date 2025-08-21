@@ -16,9 +16,14 @@ const CheckInButton = ({ reserva, onCheckInSuccess }) => {
 
         try {
             const result = await reservasService.registrarCheckIn(reserva.id);
+            console.log('Check-in result:', result);
             
             if (result.success) {
                 alert('✅ Check-in registrado exitosamente');
+                // Actualizar el estado local inmediatamente
+                reserva.estado_actual = 'presente';
+                reserva.hora_ingreso = new Date().toISOString().slice(0, 19).replace('T', ' ');
+                
                 if (onCheckInSuccess) {
                     onCheckInSuccess();
                 }
@@ -26,6 +31,7 @@ const CheckInButton = ({ reserva, onCheckInSuccess }) => {
                 setError(result.message);
             }
         } catch (err) {
+            console.error('Error en check-in:', err);
             setError(err.message);
         } finally {
             setLoading(false);
@@ -42,9 +48,14 @@ const CheckInButton = ({ reserva, onCheckInSuccess }) => {
 
         try {
             const result = await reservasService.registrarCheckOut(reserva.id);
+            console.log('Check-out result:', result);
             
             if (result.success) {
                 alert('✅ Check-out registrado exitosamente');
+                // Actualizar el estado local inmediatamente
+                reserva.estado_actual = 'finalizada';
+                reserva.hora_salida = new Date().toISOString().slice(0, 19).replace('T', ' ');
+                
                 if (onCheckInSuccess) {
                     onCheckInSuccess();
                 }
@@ -52,6 +63,7 @@ const CheckInButton = ({ reserva, onCheckInSuccess }) => {
                 setError(result.message);
             }
         } catch (err) {
+            console.error('Error en check-out:', err);
             setError(err.message);
         } finally {
             setLoading(false);
@@ -61,12 +73,18 @@ const CheckInButton = ({ reserva, onCheckInSuccess }) => {
     const getTiempoTranscurrido = () => {
         if (!reserva.hora_ingreso) return null;
         
-        const ingreso = new Date(reserva.hora_ingreso);
+        // Crear fecha asumiendo que viene en formato local de la base de datos
+        const ingreso = new Date(reserva.hora_ingreso + ' UTC');
         const ahora = new Date();
         const diffMs = ahora - ingreso;
-        const diffMins = Math.floor(diffMs / 60000);
+        const diffMins = Math.floor(Math.abs(diffMs) / 60000);
         const diffHours = Math.floor(diffMins / 60);
         const remainingMins = diffMins % 60;
+        
+        // Si la diferencia es negativa, mostrar 0
+        if (diffMs < 0) {
+            return '0h 0m';
+        }
         
         return `${diffHours}h ${remainingMins}m`;
     };

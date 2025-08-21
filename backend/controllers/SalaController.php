@@ -4,9 +4,12 @@
 // header('Access-Control-Allow-Methods: GET, OPTIONS');
 // header('Access-Control-Allow-Headers: Authorization, Content-Type');
 
-include_once '../config/cors.php';
-include_once '../config/database.php';
-include_once '../models/Sala.php';
+include_once __DIR__ . '/../config/cors.php';
+include_once __DIR__ . '/../config/database.php';
+include_once __DIR__ . '/../models/Sala.php';
+
+// Establecer Content-Type JSON
+header('Content-Type: application/json');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();

@@ -1,12 +1,15 @@
 <?php
+// Establecer Content-Type JSON inmediatamente
+header('Content-Type: application/json');
+
 // header('Access-Control-Allow-Origin: http://localhost:3000');
 // header('Content-Type: application/json');
 // header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
 // header('Access-Control-Allow-Headers: Authorization, Content-Type');
 
-include_once '../config/cors.php';
-include_once '../config/database.php';
-include_once '../models/Cliente.php';
+include_once __DIR__ . '/../config/cors.php';
+include_once __DIR__ . '/../config/database.php';
+include_once __DIR__ . '/../models/Cliente.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();

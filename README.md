@@ -63,8 +63,24 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/a
 
 ### Deployment
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+This section has
+ moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
 
 ### `npm run build` fails to minify
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+
+# Si no especificas directorio, te muestra las opciones disponibles:
+.\generar-estructura-con-datos.ps1 -IncludeContent
+
+# Procesar solo la carpeta backend (eficiente):
+.\generar-estructura-con-datos.ps1 -IncludeContent -TargetDirectory backend
+
+# Procesar solo auth:
+.\generar-estructura-con-datos.ps1 -IncludeContent -TargetDirectory auth
+
+# Solo JSON del frontend:
+.\generar-estructura-con-datos.ps1 -IncludeContent -TargetDirectory frontend -OutputType json
+
+
+.\generar-estructura-con-datos.ps1 -IncludeContent -TargetDirectory backend -OutputType json

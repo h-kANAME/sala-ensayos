@@ -31,7 +31,7 @@ const CalendarioReservas = () => {
 
             console.log('Rango de fechas:', fechaInicioStr, 'a', fechaFinStr);
 
-            const reservasData = await reservasService.obtenerReservasPorRango(fechaInicioStr, fechaFinStr);
+            const reservasData = await reservasService.obtenerPorRango(fechaInicioStr, fechaFinStr);
 
             console.log('Reservas obtenidas:', reservasData);
 
@@ -151,16 +151,17 @@ const CalendarioReservas = () => {
                 ) : (
                     <div className="reservas-grid">
                         {reservas.map(reserva => (
-                            <div key={reserva.id} className={`reserva-item ${reserva.estado}`}>
+                            <div key={reserva.id} className={`reserva-item ${reserva.estado_actual}`}>
                                 <div className="reserva-header">
                                     <h4>{reserva.cliente_nombre || 'Cliente no especificado'}</h4>
-                                    <span className={`badge-estado ${reserva.estado}`}>
-                                        {reserva.estado}
+                                    <span className={`badge-estado ${reserva.estado_actual}`}>
+                                        {reserva.estado_actual}
                                     </span>
                                 </div>
-
+                                {/* { Estados: AUSENTE - PENDIENTE - PRESENTE - FINALIZADA} */}
                                 <div className="reserva-info">
                                     <p>🎵 <strong>Sala:</strong> {reserva.sala_nombre}</p>
+
                                     <p>📅 <strong>Fecha:</strong> {new Date(reserva.fecha_reserva).toLocaleDateString('es-ES')}</p>
                                     <p>⏰ <strong>Horario:</strong> {reserva.hora_inicio} - {reserva.hora_fin}</p>
                                     <p>💰 <strong>Importe:</strong> ${reserva.importe_total}</p>

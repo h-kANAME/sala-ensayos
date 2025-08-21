@@ -144,15 +144,15 @@
     border-left: 4px solid #ffc107;
 }
 
-.reserva-item.confirmada {
+.reserva-item.finalizada {
     border-left: 4px solid #28a745;
 }
 
-.reserva-item.cancelada {
+.reserva-item.ausente {
     border-left: 4px solid #dc3545;
 }
 
-.reserva-item.completada {
+.reserva-item.presente {
     border-left: 4px solid #17a2b8;
 }
 

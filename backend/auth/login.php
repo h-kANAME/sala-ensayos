@@ -1,6 +1,6 @@
 <?php
 // Incluir configuración CORS
-include_once '../config/cors.php';
+include_once __DIR__ . '/../config/cors.php';
 
 // Solo continuar si no es preflight
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
@@ -9,7 +9,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
 session_start();
 
-include_once '../config/database.php';
+include_once __DIR__ . '/../config/database.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     

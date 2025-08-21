@@ -1,0 +1,104 @@
+﻿REPORTE COMPLETO DEL PROYECTO - SALA DE ENSAYOS
+======================================================================
+Generado: 2025-08-21 01:26:09
+Directorio base: C:\xampp\htdocs\sala-ensayos
+Incluye contenido: NO
+======================================================================
+
+ESTADISTICAS DEL PROYECTO:
+------------------------------
+Total archivos: 57
+Total directorios: 30
+TamaÃ±o total: 0.86 MB
+
+======================================================================
+
+ESTRUCTURA DE ARCHIVOS:
+------------------------------
++-- [DIR] sala-ensayos/
+    |-- [DIR] backend/
+    |   |-- [DIR] auth/
+    |   |   |-- [FILE] login.php (2.97 KB)
+    |   |   +-- [FILE] verify.php (2.41 KB)
+    |   |-- [DIR] config/
+    |   |   |-- [FILE] cors.php (0.16 KB)
+    |   |   +-- [FILE] database.php (0.72 KB)
+    |   |-- [DIR] controllers/
+    |   |   |-- [FILE] CheckinController.php (3.26 KB)
+    |   |   |-- [FILE] ClienteController.php (4.21 KB)
+    |   |   |-- [FILE] ReservaController.php (8.72 KB)
+    |   |   +-- [FILE] SalaController.php (1.44 KB)
+    |   |-- [DIR] middleware/
+    |   |-- [DIR] models/
+    |   |   |-- [FILE] Cliente.php (4.59 KB)
+    |   |   |-- [FILE] Reserva.php (11.04 KB)
+    |   |   +-- [FILE] Sala.php (0.96 KB)
+    |   |-- [DIR] routes/
+    |   |   +-- [FILE] reservas.php (0.06 KB)
+    |   +-- [FILE] backend.zip (8.18 KB)
+    |-- [DIR] database/
+    |   +-- [FILE] schema.sql (4.85 KB)
+    |-- [DIR] docs/
+    |-- [DIR] public/
+    |   |-- [DIR] api/
+    |   |   +-- [FILE] index.php (1.81 KB)
+    |   |-- [DIR] docs/
+    |   |-- [FILE] favicon.ico (3.78 KB)
+    |   |-- [FILE] index.html (1.68 KB)
+    |   |-- [FILE] logo192.png (5.22 KB)
+    |   |-- [FILE] logo512.png (9.44 KB)
+    |   |-- [FILE] manifest.json (0.48 KB)
+    |   +-- [FILE] robots.txt (0.07 KB)
+    |-- [DIR] src/
+    |   |-- [DIR] assets/
+    |   |   |-- [DIR] icons/
+    |   |   +-- [DIR] images/
+    |   |-- [DIR] components/
+    |   |   |-- [DIR] auth/
+    |   |   |   |-- [FILE] Login.css (2.21 KB)
+    |   |   |   +-- [FILE] Login.js (2.96 KB)
+    |   |   |-- [DIR] clientes/
+    |   |   |-- [DIR] common/
+    |   |   |   |-- [FILE] Layout.css (1.6 KB)
+    |   |   |   |-- [FILE] Layout.js (1.59 KB)
+    |   |   |   |-- [FILE] Loading.css (0.56 KB)
+    |   |   |   +-- [FILE] Loading.js (0.27 KB)
+    |   |   |-- [DIR] productos/
+    |   |   |-- [DIR] reportes/
+    |   |   |-- [DIR] reservas/
+    |   |   |   |-- [FILE] CalendarioReservas.css (4.64 KB)
+    |   |   |   |-- [FILE] CalendarioReservas.js (7.47 KB)
+    |   |   |   |-- [FILE] CheckInButton.css (1.88 KB)
+    |   |   |   |-- [FILE] CheckInButton.js (4.66 KB)
+    |   |   |   |-- [FILE] FormularioReserva.css (2.78 KB)
+    |   |   |   +-- [FILE] FormularioReserva.js (9.13 KB)
+    |   |   +-- [DIR] ventas/
+    |   |-- [DIR] context/
+    |   |   +-- [FILE] AuthContext.js (2.24 KB)
+    |   |-- [DIR] pages/
+    |   |   |-- [FILE] Dashboard.css (2.41 KB)
+    |   |   +-- [FILE] Dashboard.js (1.93 KB)
+    |   |-- [DIR] services/
+    |   |   |-- [FILE] api.js (1.78 KB)
+    |   |   |-- [FILE] authService.js (0.85 KB)
+    |   |   |-- [FILE] clientesService.js (1.92 KB)
+    |   |   |-- [FILE] reservasService.js (3.06 KB)
+    |   |   +-- [FILE] salasService.js (0.76 KB)
+    |   |-- [DIR] styles/
+    |   |-- [DIR] utils/
+    |   |-- [FILE] App.css (1.11 KB)
+    |   |-- [FILE] App.js (1.38 KB)
+    |   |-- [FILE] App.test.js (0.24 KB)
+    |   |-- [FILE] index.css (0.36 KB)
+    |   |-- [FILE] index.js (0.31 KB)
+    |   |-- [FILE] logo.svg (2.57 KB)
+    |   |-- [FILE] reportWebVitals.js (0.35 KB)
+    |   +-- [FILE] setupTests.js (0.24 KB)
+    |-- [FILE] docker-compose.yml (1.15 KB)
+    |-- [FILE] Dockerfile (0.93 KB)
+    |-- [FILE] generar-estructura-con-datos.ps1 (15.5 KB)
+    |-- [FILE] generar-estructura.ps1 (5.62 KB)
+    |-- [FILE] LICENSE (34.98 KB)
+    |-- [FILE] package-lock.json (678.57 KB)
+    |-- [FILE] package.json (1.11 KB)
+    +-- [FILE] README.md (3.28 KB)

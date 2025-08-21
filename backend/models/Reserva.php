@@ -18,7 +18,6 @@ class Reserva
     public $hora_ingreso;
     public $hora_salida;
     public $estado_actual;
-
     public $fecha_creacion;
 
     public function __construct($db)
@@ -29,14 +28,24 @@ class Reserva
     // Crear nueva reserva
     public function crear()
     {
+        error_log("=== INICIANDO CREACIÓN DE RESERVA ===");
+        
         $query = "INSERT INTO " . $this->table_name . "
         SET cliente_id=:cliente_id, sala_id=:sala_id, usuario_id=:usuario_id,
             fecha_reserva=:fecha_reserva, hora_inicio=:hora_inicio, hora_fin=:hora_fin,
             horas_reservadas=:horas_reservadas, estado=:estado, importe_total=:importe_total,
             notas=:notas, estado_actual=:estado_actual";
 
+        error_log("Query a ejecutar: " . $query);
+        
         $stmt = $this->conn->prepare($query);
-
+        
+        if (!$stmt) {
+            error_log("ERROR: No se pudo preparar la query");
+            error_log("Error PDO: " . print_r($this->conn->errorInfo(), true));
+            return false;
+        }
+        
         // Sanitizar inputs
         $this->cliente_id = htmlspecialchars(strip_tags($this->cliente_id));
         $this->sala_id = htmlspecialchars(strip_tags($this->sala_id));
@@ -48,6 +57,20 @@ class Reserva
         $this->estado = htmlspecialchars(strip_tags($this->estado));
         $this->importe_total = htmlspecialchars(strip_tags($this->importe_total));
         $this->notas = htmlspecialchars(strip_tags($this->notas));
+
+        // Debug de valores antes del bind
+        error_log("Valores a insertar:");
+        error_log("- cliente_id: " . $this->cliente_id);
+        error_log("- sala_id: " . $this->sala_id);
+        error_log("- usuario_id: " . $this->usuario_id);
+        error_log("- fecha_reserva: " . $this->fecha_reserva);
+        error_log("- hora_inicio: " . $this->hora_inicio);
+        error_log("- hora_fin: " . $this->hora_fin);
+        error_log("- horas_reservadas: " . $this->horas_reservadas);
+        error_log("- estado: " . $this->estado);
+        error_log("- importe_total: " . $this->importe_total);
+        error_log("- notas: " . $this->notas);
+        error_log("- estado_actual: " . $this->estado_actual);
 
         // Bind parameters
         $stmt->bindParam(":cliente_id", $this->cliente_id);
@@ -62,10 +85,32 @@ class Reserva
         $stmt->bindParam(":notas", $this->notas);
         $stmt->bindParam(":estado_actual", $this->estado_actual);
 
-        if ($stmt->execute()) {
-            return true;
+        error_log("Ejecutando query...");
+        error_log("About to execute prepared statement");
+        
+        try {
+            $result = $stmt->execute();
+            error_log("Execute result: " . ($result ? 'true' : 'false'));
+        } catch (PDOException $e) {
+            error_log("PDO Exception: " . $e->getMessage());
+            error_log("Error code: " . $e->getCode());
+            return false;
+        } catch (Exception $e) {
+            error_log("General Exception: " . $e->getMessage());
+            return false;
         }
-        return false;
+        
+        if ($result) {
+            $last_id = $this->conn->lastInsertId();
+            error_log("✓ Reserva creada exitosamente con ID: " . $last_id);
+            error_log("=== FIN CREACIÓN DE RESERVA ===");
+            return true;
+        } else {
+            error_log("✗ ERROR al ejecutar la query");
+            error_log("Error info: " . print_r($stmt->errorInfo(), true));
+            error_log("=== FIN CREACIÓN DE RESERVA (ERROR) ===");
+            return false;
+        }
     }
 
     // Obtener todas las reservas con información de cliente y sala
@@ -114,6 +159,10 @@ class Reserva
     // Verificar disponibilidad de sala
     public function verificarDisponibilidad($sala_id, $fecha, $hora_inicio, $hora_fin, $excluir_id = null)
     {
+        error_log("=== VERIFICANDO DISPONIBILIDAD ===");
+        error_log("Sala ID: $sala_id, Fecha: $fecha");
+        error_log("Hora inicio: $hora_inicio, Hora fin: $hora_fin");
+        
         $query = "SELECT COUNT(*) as count 
                   FROM " . $this->table_name . " 
                   WHERE sala_id = :sala_id 
@@ -127,6 +176,8 @@ class Reserva
             $query .= " AND id != :excluir_id";
         }
 
+        error_log("Query disponibilidad: " . $query);
+
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(":sala_id", $sala_id);
         $stmt->bindParam(":fecha", $fecha);
@@ -139,8 +190,12 @@ class Reserva
 
         $stmt->execute();
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        $disponible = $row['count'] == 0;
+        error_log("Conflictos encontrados: " . $row['count'] . " - Disponible: " . ($disponible ? 'SÍ' : 'NO'));
+        error_log("=== FIN VERIFICACIÓN DISPONIBILIDAD ===");
 
-        return $row['count'] == 0;
+        return $disponible;
     }
 
     // Obtener una reserva por ID
@@ -234,4 +289,20 @@ class Reserva
 
         return $stmt;
     }
+
+    // Actualizar estados automáticamente basado en horarios
+    public function actualizarEstadosAutomaticos()
+    {
+        // Marcar como ausente las reservas que no hicieron check-in después de 15 min de la hora de inicio
+        $query1 = "UPDATE " . $this->table_name . " 
+                   SET estado_actual = 'ausente' 
+                   WHERE estado_actual = 'pendiente' 
+                   AND CONCAT(fecha_reserva, ' ', hora_inicio) < DATE_SUB(NOW(), INTERVAL 15 MINUTE)";
+        
+        $stmt1 = $this->conn->prepare($query1);
+        $stmt1->execute();
+        
+        return true;
+    }
 }
+?>
