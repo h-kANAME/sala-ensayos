@@ -40,7 +40,7 @@ const Layout = ({ children }) => {
                     )}
                     
                     {/* Todos pueden acceder a Ventas */}
-                    <li><a href="#ventas">Ventas</a></li>
+                    <li><Link to="/ventas">Ventas</Link></li>
                 </ul>
             </nav>
 

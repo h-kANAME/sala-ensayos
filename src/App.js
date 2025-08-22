@@ -9,6 +9,9 @@ import ClienteEditar from './pages/ClienteEditar';
 import Productos from './pages/Productos';
 import ProductoNuevo from './pages/ProductoNuevo';
 import ProductoEditar from './pages/ProductoEditar';
+import Ventas from './pages/Ventas';
+import VentaNueva from './pages/VentaNueva';
+import VentaEditar from './pages/VentaEditar';
 import Loading from './components/common/Loading';
 import './App.css';
 
@@ -86,8 +89,25 @@ function AppContent() {
           </ProtectedRoute>
         } />
 
+        {/* Módulo Ventas */}
+        <Route path="/ventas" element={
+          <ProtectedRoute>
+            <Ventas />
+          </ProtectedRoute>
+        } />
+        <Route path="/ventas/nueva" element={
+          <ProtectedRoute>
+            <VentaNueva />
+          </ProtectedRoute>
+        } />
+        <Route path="/ventas/editar/:id" element={
+          <ProtectedRoute>
+            <VentaEditar />
+          </ProtectedRoute>
+        } />
+
         {/* Rutas preparadas para futuros módulos:
-            /reservas, /productos, /ventas, /reportes
+            /reservas, /reportes
             Cada página debe seguir el patrón:
             - Página principal: /modulo
             - Nuevo: /modulo/nuevo  

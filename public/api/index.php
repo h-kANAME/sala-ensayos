@@ -39,6 +39,11 @@ switch(true) {
         include_once '../../backend/controllers/ProductoController.php';
         break;
         
+    case strpos($path, 'ventas') === 0:
+        error_log("Redirigiendo a VentaController");
+        include_once '../../backend/controllers/VentaController.php';
+        break;
+        
     case strpos($path, 'salas') === 0:
         error_log("Redirigiendo a SalaController");
         include_once '../../backend/controllers/SalaController.php';
