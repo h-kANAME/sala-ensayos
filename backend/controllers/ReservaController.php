@@ -231,6 +231,125 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit();
 }
 
+// Actualizar reserva
+if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
+    error_log("Actualizando reserva - Método: PUT");
+    
+    // Obtener ID de la URL (formato REST: /reservas/123)
+    $uri = $_SERVER['REQUEST_URI'];
+    $path = parse_url($uri, PHP_URL_PATH);
+    $path = str_replace('/public/api', '', $path);
+    $segments = explode('/', trim($path, '/'));
+    
+    // El ID debería estar en el segundo segmento: ['reservas', '123']
+    $id = isset($segments[1]) && is_numeric($segments[1]) ? intval($segments[1]) : null;
+    
+    if (!$id) {
+        http_response_code(400);
+        echo json_encode(array("message" => "ID de reserva no proporcionado"));
+        exit();
+    }
+    
+    $data = json_decode(file_get_contents("php://input"));
+    
+    if (!empty($data->cliente_id) && !empty($data->sala_id) && !empty($data->fecha_reserva) && 
+        !empty($data->hora_inicio) && !empty($data->hora_fin)) {
+        
+        // Calcular horas reservadas e importe
+        $hora_inicio_obj = new DateTime($data->fecha_reserva . ' ' . $data->hora_inicio);
+        $hora_fin_obj = new DateTime($data->fecha_reserva . ' ' . $data->hora_fin);
+        
+        if ($hora_fin_obj <= $hora_inicio_obj) {
+            $hora_fin_obj->add(new DateInterval('P1D'));
+        }
+        
+        $diff = $hora_inicio_obj->diff($hora_fin_obj);
+        $horas_reservadas = $diff->h + ($diff->i / 60);
+        
+        // Obtener tarifa de la sala
+        $tarifa_query = "SELECT tarifa_hora FROM salas WHERE id = :sala_id";
+        $tarifa_stmt = $db->prepare($tarifa_query);
+        $tarifa_stmt->bindParam(":sala_id", $data->sala_id);
+        $tarifa_stmt->execute();
+        $tarifa_row = $tarifa_stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if (!$tarifa_row) {
+            http_response_code(400);
+            echo json_encode(array("message" => "Sala no encontrada"));
+            exit();
+        }
+        
+        $tarifa = $tarifa_row['tarifa_hora'];
+        $importe_total = $horas_reservadas * $tarifa;
+        
+        // Asignar propiedades
+        $reserva->id = $id;
+        $reserva->cliente_id = $data->cliente_id;
+        $reserva->sala_id = $data->sala_id;
+        $reserva->usuario_id = $data->usuario_id ?? 1;
+        $reserva->fecha_reserva = $data->fecha_reserva;
+        $reserva->hora_inicio = $data->hora_inicio;
+        $reserva->hora_fin = $data->hora_fin;
+        $reserva->horas_reservadas = $horas_reservadas;
+        $reserva->estado = $data->estado ?? 'pendiente';
+        $reserva->importe_total = $importe_total;
+        $reserva->notas = $data->notas ?? '';
+        
+        if ($reserva->actualizar()) {
+            error_log("Reserva actualizada exitosamente");
+            http_response_code(200);
+            echo json_encode(array(
+                "success" => true,
+                "message" => "Reserva actualizada exitosamente",
+                "importe_total" => $importe_total,
+                "horas_reservadas" => $horas_reservadas
+            ));
+        } else {
+            http_response_code(503);
+            echo json_encode(array("message" => "No se pudo actualizar la reserva"));
+        }
+    } else {
+        http_response_code(400);
+        echo json_encode(array("message" => "Datos incompletos"));
+    }
+    exit();
+}
+
+// Eliminar reserva
+if ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
+    error_log("Eliminando reserva - Método: DELETE");
+    
+    // Obtener ID de la URL (formato REST: /reservas/123)
+    $uri = $_SERVER['REQUEST_URI'];
+    $path = parse_url($uri, PHP_URL_PATH);
+    $path = str_replace('/public/api', '', $path);
+    $segments = explode('/', trim($path, '/'));
+    
+    // El ID debería estar en el segundo segmento: ['reservas', '123']
+    $id = isset($segments[1]) && is_numeric($segments[1]) ? intval($segments[1]) : null;
+    
+    if ($id) {
+        try {
+            if ($reserva->eliminar($id)) {
+                error_log("Reserva eliminada exitosamente");
+                http_response_code(200);
+                echo json_encode(array("success" => true, "message" => "Reserva eliminada exitosamente"));
+            } else {
+                http_response_code(503);
+                echo json_encode(array("success" => false, "message" => "No se pudo eliminar la reserva"));
+            }
+        } catch (Exception $e) {
+            error_log("Error eliminando reserva: " . $e->getMessage());
+            http_response_code(400);
+            echo json_encode(array("success" => false, "message" => $e->getMessage()));
+        }
+    } else {
+        http_response_code(400);
+        echo json_encode(array("success" => false, "message" => "ID no proporcionado o inválido"));
+    }
+    exit();
+}
+
 http_response_code(405);
 echo json_encode(array("message" => "Método no permitido"));
 ?>

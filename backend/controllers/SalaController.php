@@ -22,9 +22,18 @@ $sala = new Sala($db);
 
 // Obtener todas las salas activas
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-    if (isset($_GET['id'])) {
+    // Obtener ID de la URL si existe (formato REST: /salas/123)
+    $uri = $_SERVER['REQUEST_URI'];
+    $path = parse_url($uri, PHP_URL_PATH);
+    $path = str_replace('/public/api', '', $path);
+    $segments = explode('/', trim($path, '/'));
+    
+    // El ID estaría en el segundo segmento: ['salas', '123']
+    $id = isset($segments[1]) && is_numeric($segments[1]) ? intval($segments[1]) : null;
+    
+    if ($id) {
         // Obtener sala por ID
-        $stmt = $sala->obtenerPorId($_GET['id']);
+        $stmt = $sala->obtenerPorId($id);
         $sala_data = $stmt->fetch(PDO::FETCH_ASSOC);
         
         if ($sala_data) {

@@ -125,6 +125,7 @@ class Reserva
           FROM " . $this->table_name . " r
           LEFT JOIN clientes c ON r.cliente_id = c.id
           LEFT JOIN salas s ON r.sala_id = s.id
+          WHERE r.estado != 'cancelada'
           ORDER BY r.fecha_reserva DESC, r.hora_inicio DESC";
 
         $stmt = $this->conn->prepare($query);
@@ -146,6 +147,7 @@ class Reserva
                   LEFT JOIN clientes c ON r.cliente_id = c.id
                   LEFT JOIN salas s ON r.sala_id = s.id
                   WHERE r.fecha_reserva BETWEEN :fecha_inicio AND :fecha_fin
+                  AND r.estado != 'cancelada'
                   ORDER BY r.fecha_reserva, r.hora_inicio";
 
         $stmt = $this->conn->prepare($query);
@@ -288,6 +290,124 @@ class Reserva
         $stmt->execute();
 
         return $stmt;
+    }
+
+    // Actualizar reserva
+    public function actualizar()
+    {
+        error_log("=== INICIANDO ACTUALIZACIÓN DE RESERVA ID: " . $this->id . " ===");
+        
+        $query = "UPDATE " . $this->table_name . "
+                 SET cliente_id=:cliente_id, sala_id=:sala_id, usuario_id=:usuario_id,
+                     fecha_reserva=:fecha_reserva, hora_inicio=:hora_inicio, hora_fin=:hora_fin,
+                     horas_reservadas=:horas_reservadas, estado=:estado, importe_total=:importe_total,
+                     notas=:notas
+                 WHERE id=:id";
+
+        $stmt = $this->conn->prepare($query);
+        
+        if (!$stmt) {
+            error_log("ERROR: No se pudo preparar la query de actualización");
+            return false;
+        }
+        
+        // Sanitizar inputs
+        $this->cliente_id = htmlspecialchars(strip_tags($this->cliente_id));
+        $this->sala_id = htmlspecialchars(strip_tags($this->sala_id));
+        $this->usuario_id = htmlspecialchars(strip_tags($this->usuario_id));
+        $this->fecha_reserva = htmlspecialchars(strip_tags($this->fecha_reserva));
+        $this->hora_inicio = htmlspecialchars(strip_tags($this->hora_inicio));
+        $this->hora_fin = htmlspecialchars(strip_tags($this->hora_fin));
+        $this->horas_reservadas = htmlspecialchars(strip_tags($this->horas_reservadas));
+        $this->estado = htmlspecialchars(strip_tags($this->estado));
+        $this->importe_total = htmlspecialchars(strip_tags($this->importe_total));
+        $this->notas = htmlspecialchars(strip_tags($this->notas));
+        $this->id = htmlspecialchars(strip_tags($this->id));
+
+        // Bind parameters
+        $stmt->bindParam(":cliente_id", $this->cliente_id);
+        $stmt->bindParam(":sala_id", $this->sala_id);
+        $stmt->bindParam(":usuario_id", $this->usuario_id);
+        $stmt->bindParam(":fecha_reserva", $this->fecha_reserva);
+        $stmt->bindParam(":hora_inicio", $this->hora_inicio);
+        $stmt->bindParam(":hora_fin", $this->hora_fin);
+        $stmt->bindParam(":horas_reservadas", $this->horas_reservadas);
+        $stmt->bindParam(":estado", $this->estado);
+        $stmt->bindParam(":importe_total", $this->importe_total);
+        $stmt->bindParam(":notas", $this->notas);
+        $stmt->bindParam(":id", $this->id);
+
+        try {
+            $result = $stmt->execute();
+            if ($result) {
+                error_log("✓ Reserva actualizada exitosamente");
+                return true;
+            } else {
+                error_log("✗ ERROR al actualizar la reserva");
+                error_log("Error info: " . print_r($stmt->errorInfo(), true));
+                return false;
+            }
+        } catch (Exception $e) {
+            error_log("Exception al actualizar reserva: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    // Eliminar reserva (soft delete)
+    public function eliminar($id)
+    {
+        error_log("=== INICIANDO ELIMINACIÓN DE RESERVA ID: " . $id . " ===");
+        
+        // Primero verificar el estado actual de la reserva
+        $queryVerificar = "SELECT estado_actual FROM " . $this->table_name . " WHERE id = :id";
+        $stmtVerificar = $this->conn->prepare($queryVerificar);
+        $stmtVerificar->bindParam(':id', $id);
+        $stmtVerificar->execute();
+        
+        if ($stmtVerificar->rowCount() == 0) {
+            error_log("ERROR: Reserva con ID $id no encontrada");
+            return false;
+        }
+        
+        $reserva = $stmtVerificar->fetch(PDO::FETCH_ASSOC);
+        $estadoActual = $reserva['estado_actual'];
+        
+        // No permitir eliminar reservas finalizadas
+        if (strtoupper($estadoActual) === 'FINALIZADA') {
+            error_log("ERROR: No se puede eliminar reserva finalizada (ID: $id)");
+            throw new Exception("No se puede eliminar una reserva que ya finalizó (checkout realizado)");
+        }
+        
+        error_log("Estado actual de reserva ID $id: $estadoActual - Eliminación permitida");
+        
+        // Soft delete: cambiar estado a 'cancelada' en lugar de eliminar físicamente
+        $query = "UPDATE " . $this->table_name . " 
+                  SET estado = 'cancelada', estado_actual = 'cancelada' 
+                  WHERE id = :id";
+
+        $stmt = $this->conn->prepare($query);
+        
+        if (!$stmt) {
+            error_log("ERROR: No se pudo preparar la query de eliminación");
+            return false;
+        }
+        
+        $stmt->bindParam(":id", $id);
+
+        try {
+            $result = $stmt->execute();
+            if ($result && $stmt->rowCount() > 0) {
+                error_log("✓ Reserva eliminada exitosamente (soft delete)");
+                return true;
+            } else {
+                error_log("✗ ERROR: No se encontró la reserva o ya estaba eliminada");
+                error_log("Rows affected: " . $stmt->rowCount());
+                return false;
+            }
+        } catch (Exception $e) {
+            error_log("Exception al eliminar reserva: " . $e->getMessage());
+            return false;
+        }
     }
 
     // Actualizar estados automáticamente basado en horarios

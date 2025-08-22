@@ -22,9 +22,18 @@ $cliente = new Cliente($db);
 
 // Obtener todos los clientes
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-    if (isset($_GET['id'])) {
+    // Obtener ID de la URL si existe (formato REST: /clientes/123)
+    $uri = $_SERVER['REQUEST_URI'];
+    $path = parse_url($uri, PHP_URL_PATH);
+    $path = str_replace('/public/api', '', $path);
+    $segments = explode('/', trim($path, '/'));
+    
+    // El ID estaría en el segundo segmento: ['clientes', '123']
+    $id = isset($segments[1]) && is_numeric($segments[1]) ? intval($segments[1]) : null;
+    
+    if ($id) {
         // Obtener cliente por ID
-        $stmt = $cliente->obtenerPorId($_GET['id']);
+        $stmt = $cliente->obtenerPorId($id);
         $cliente_data = $stmt->fetch(PDO::FETCH_ASSOC);
         
         if ($cliente_data) {
@@ -79,10 +88,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 // Actualizar cliente
 if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
+    // Obtener ID de la URL (formato REST: /clientes/123)
+    $uri = $_SERVER['REQUEST_URI'];
+    $path = parse_url($uri, PHP_URL_PATH);
+    $path = str_replace('/public/api', '', $path);
+    $segments = explode('/', trim($path, '/'));
+    
+    // El ID debería estar en el segundo segmento: ['clientes', '123']
+    $id = isset($segments[1]) && is_numeric($segments[1]) ? intval($segments[1]) : null;
+    
     $data = json_decode(file_get_contents("php://input"));
 
-    if (!empty($data->id) && !empty($data->nombre_banda) && !empty($data->contacto_nombre)) {
-        $cliente->id = $data->id;
+    if ($id && !empty($data->nombre_banda) && !empty($data->contacto_nombre)) {
+        $cliente->id = $id;
         $cliente->nombre_banda = $data->nombre_banda;
         $cliente->contacto_nombre = $data->contacto_nombre;
         $cliente->contacto_email = $data->contacto_email ?? '';
@@ -100,16 +118,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
         }
     } else {
         http_response_code(400);
-        echo json_encode(array("message" => "Datos incompletos"));
+        echo json_encode(array("message" => "Datos incompletos o ID no proporcionado"));
     }
 }
 
 // Eliminar cliente
 if ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
-    $data = json_decode(file_get_contents("php://input"));
-
-    if (!empty($data->id)) {
-        if ($cliente->eliminar($data->id)) {
+    // Obtener ID de la URL (formato REST: /clientes/123)
+    $uri = $_SERVER['REQUEST_URI'];
+    $path = parse_url($uri, PHP_URL_PATH);
+    $path = str_replace('/public/api', '', $path);
+    $segments = explode('/', trim($path, '/'));
+    
+    // El ID debería estar en el segundo segmento: ['clientes', '123']
+    $id = isset($segments[1]) && is_numeric($segments[1]) ? intval($segments[1]) : null;
+    
+    if ($id) {
+        if ($cliente->eliminar($id)) {
             http_response_code(200);
             echo json_encode(array("message" => "Cliente eliminado exitosamente"));
         } else {
@@ -118,7 +143,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
         }
     } else {
         http_response_code(400);
-        echo json_encode(array("message" => "ID no proporcionado"));
+        echo json_encode(array("message" => "ID no proporcionado o inválido"));
     }
 }
 ?>

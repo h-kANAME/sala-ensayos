@@ -1,10 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
 import Layout from '../components/common/Layout';
 import CalendarioReservas from '../components/reservas/CalendarioReservas';
 import './Dashboard.css';
 
 const Dashboard = () => {
-    const [vistaActiva, setVistaActiva] = useState('estadisticas');
+    const { isAdmin, user, loading } = useAuth();
+    const [vistaActiva, setVistaActiva] = useState('reservas'); // Valor por defecto
+    
+    // Ajustar vista activa basada en el rol del usuario
+    useEffect(() => {
+        if (!loading && user) {
+            console.log('🎯 Dashboard: Configurando vista para usuario:', user.rol);
+            setVistaActiva(isAdmin ? 'estadisticas' : 'reservas');
+        }
+    }, [isAdmin, user, loading]);
 
     const renderContenido = () => {
         switch (vistaActiva) {
@@ -35,12 +45,14 @@ const Dashboard = () => {
         <Layout>
             <div className="dashboard">
                 <div className="dashboard-tabs">
-                    <button 
-                        className={vistaActiva === 'estadisticas' ? 'active' : ''}
-                        onClick={() => setVistaActiva('estadisticas')}
-                    >
-                        📊 Estadísticas
-                    </button>
+                    {isAdmin && (
+                        <button 
+                            className={vistaActiva === 'estadisticas' ? 'active' : ''}
+                            onClick={() => setVistaActiva('estadisticas')}
+                        >
+                            📊 Estadísticas
+                        </button>
+                    )}
                     <button 
                         className={vistaActiva === 'reservas' ? 'active' : ''}
                         onClick={() => setVistaActiva('reservas')}

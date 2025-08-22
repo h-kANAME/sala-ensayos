@@ -83,5 +83,18 @@ export const reservasService = {
     }
     
     return await api.get(url);
+  },
+
+  // Actualizar reserva
+  actualizar: async (id, datosReserva) => {
+    console.log(`✏️ Actualizando reserva ID: ${id}`);
+    console.log('📋 Datos de actualización:', datosReserva);
+    return await api.put(`/reservas/${id}`, datosReserva);
+  },
+
+  // Eliminar reserva
+  eliminarReserva: async (id) => {
+    console.log(`🗑️ Eliminando reserva ID: ${id}`);
+    return await api.delete(`/reservas/${id}`);
   }
 };

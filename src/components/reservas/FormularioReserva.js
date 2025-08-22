@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { reservasService } from '../../services/reservasService';
-import { api } from '../../services/api';
+import { clientesService } from '../../services/clientesService';
+import { salasService } from '../../services/salasService';
 import './FormularioReserva.css';
 
-const FormularioReserva = ({ onReservaCreada, fechaSeleccionada = null }) => {
+const FormularioReserva = ({ onReservaCreada, onCancelar, fechaSeleccionada = null, reservaEditando = null }) => {
   // Estados para el formulario
   const [formData, setFormData] = useState({
     cliente_id: '',
     sala_id: '',
-    fecha_reserva: fechaSeleccionada || new Date().toISOString().split('T')[0],
+    fecha_reserva: fechaSeleccionada || new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0],
     hora_inicio: '',
     hora_fin: '',
     notas: '',
@@ -25,11 +26,30 @@ const FormularioReserva = ({ onReservaCreada, fechaSeleccionada = null }) => {
   // Estados para validación
   const [disponible, setDisponible] = useState(true);
   const [validandoDisponibilidad, setValidandoDisponibilidad] = useState(false);
+  
+  // Estado para formato de hora (24h o AM/PM)
+  const [formatoHora, setFormatoHora] = useState('24h'); // '24h' o 'ampm'
 
   // Cargar clientes y salas al montar el componente
   useEffect(() => {
     cargarDatos();
   }, []);
+
+  // Cargar datos de reserva para edición
+  useEffect(() => {
+    if (reservaEditando) {
+      console.log('📝 Cargando datos para edición:', reservaEditando);
+      setFormData({
+        cliente_id: reservaEditando.cliente_id || '',
+        sala_id: reservaEditando.sala_id || '',
+        fecha_reserva: reservaEditando.fecha_reserva || '',
+        hora_inicio: reservaEditando.hora_inicio || '',
+        hora_fin: reservaEditando.hora_fin || '',
+        notas: reservaEditando.notas || '',
+        estado: reservaEditando.estado || 'pendiente'
+      });
+    }
+  }, [reservaEditando]);
 
   // Actualizar fecha si se recibe una nueva
   useEffect(() => {
@@ -40,6 +60,50 @@ const FormularioReserva = ({ onReservaCreada, fechaSeleccionada = null }) => {
       }));
     }
   }, [fechaSeleccionada]);
+
+  // Función para determinar la fecha correcta basada en la hora de inicio
+  const calcularFechaCorrecta = (fechaSeleccionada, horaInicio) => {
+    if (!fechaSeleccionada || !horaInicio) return fechaSeleccionada;
+    
+    const [horas, minutos] = horaInicio.split(':').map(Number);
+    
+    // Si la hora de inicio es entre 00:00 y 05:59, se considera del día siguiente
+    // Esto maneja el caso: reservar 00:30-01:30 el día 21/08 debe aparecer en reservas del 22/08
+    if (horas >= 0 && horas < 6) {
+      const fechaBase = new Date(fechaSeleccionada + 'T00:00:00');
+      fechaBase.setDate(fechaBase.getDate() + 1); // Agregar un día
+      return fechaBase.toISOString().split('T')[0];
+    }
+    
+    // Para horarios de 06:00 en adelante (incluyendo 23:00), mantener la fecha original
+    return fechaSeleccionada;
+  };
+
+  // Funciones para manejo de formatos de hora
+  const convertirA24h = (hora12, periodo) => {
+    const [horas, minutos] = hora12.split(':').map(Number);
+    let horas24 = horas;
+    
+    if (periodo === 'AM') {
+      if (horas === 12) horas24 = 0;
+    } else { // PM
+      if (horas !== 12) horas24 = horas + 12;
+    }
+    
+    return `${horas24.toString().padStart(2, '0')}:${minutos.toString().padStart(2, '0')}`;
+  };
+
+  const convertirA12h = (hora24) => {
+    const [horas, minutos] = hora24.split(':').map(Number);
+    const periodo = horas >= 12 ? 'PM' : 'AM';
+    let horas12 = horas % 12;
+    if (horas12 === 0) horas12 = 12;
+    
+    return {
+      hora: `${horas12.toString().padStart(2, '0')}:${minutos.toString().padStart(2, '0')}`,
+      periodo
+    };
+  };
 
   // Validar disponibilidad cuando cambian los datos relevantes
   useEffect(() => {
@@ -54,22 +118,27 @@ const FormularioReserva = ({ onReservaCreada, fechaSeleccionada = null }) => {
     try {
       console.log('🔄 Cargando clientes y salas...');
       
-      // Cargar clientes y salas en paralelo
+      // Cargar clientes y salas usando los servicios apropiados
       const [clientesResponse, salasResponse] = await Promise.all([
-        api.get('/clientes'),
-        api.get('/salas')
+        clientesService.obtenerClientes(),
+        salasService.obtenerSalas()
       ]);
 
       console.log('👥 Clientes cargados:', clientesResponse);
       console.log('🏠 Salas cargadas:', salasResponse);
 
-      // Asegurar que sean arrays
-      setClientes(Array.isArray(clientesResponse) ? clientesResponse : []);
-      setSalas(Array.isArray(salasResponse) ? salasResponse : []);
+      // Extraer los arrays correctamente (considerar formato { data: [...] })
+      const clientesArray = Array.isArray(clientesResponse) ? clientesResponse : (clientesResponse.data || []);
+      const salasArray = Array.isArray(salasResponse) ? salasResponse : (salasResponse.data || []);
+      
+      setClientes(clientesArray);
+      setSalas(salasArray);
+      
+      console.log('📊 Arrays procesados - Clientes:', clientesArray.length, 'Salas:', salasArray.length);
       
     } catch (error) {
       console.error('❌ Error al cargar datos:', error);
-      setError('Error al cargar clientes y salas');
+      setError('Error al cargar clientes y salas: ' + error.message);
       
       // Inicializar arrays vacíos en caso de error
       setClientes([]);
@@ -130,41 +199,57 @@ const FormularioReserva = ({ onReservaCreada, fechaSeleccionada = null }) => {
     setSuccess('');
 
     try {
-      console.log('📝 Creando reserva con datos:', formData);
+      const esEdicion = !!reservaEditando;
+      console.log(esEdicion ? '✏️ Actualizando reserva con datos:' : '📝 Creando reserva con datos:', formData);
       
       // Obtener usuario_id del localStorage (asumiendo que se guarda al login)
       const usuarioId = localStorage.getItem('usuario_id') || '1';
       
+      // Calcular la fecha correcta según la regla de negocio para horarios nocturnos
+      const fechaCorrecta = calcularFechaCorrecta(formData.fecha_reserva, formData.hora_inicio);
+      
       const datosReserva = {
         ...formData,
+        fecha_reserva: fechaCorrecta,
         usuario_id: usuarioId
       };
+      
+      console.log('📅 Fecha original:', formData.fecha_reserva, 'Fecha corregida:', fechaCorrecta, 'Hora:', formData.hora_inicio);
 
-      const resultado = await reservasService.crear(datosReserva);
+      let resultado;
+      if (esEdicion) {
+        resultado = await reservasService.actualizar(reservaEditando.id, datosReserva);
+        setSuccess('Reserva actualizada exitosamente');
+      } else {
+        resultado = await reservasService.crear(datosReserva);
+        setSuccess('Reserva creada exitosamente');
+      }
       
-      console.log('✅ Reserva creada:', resultado);
+      console.log(`✅ Reserva ${esEdicion ? 'actualizada' : 'creada'}:`, resultado);
       
-      setSuccess('Reserva creada exitosamente');
-      
-      // Limpiar formulario
-      setFormData({
-        cliente_id: '',
-        sala_id: '',
-        fecha_reserva: fechaSeleccionada || new Date().toISOString().split('T')[0],
-        hora_inicio: '',
-        hora_fin: '',
-        notas: '',
-        estado: 'pendiente'
-      });
+      // Limpiar formulario solo si es creación
+      if (!esEdicion) {
+        setFormData({
+          cliente_id: '',
+          sala_id: '',
+          fecha_reserva: fechaSeleccionada || new Date().toISOString().split('T')[0],
+          hora_inicio: '',
+          hora_fin: '',
+          notas: '',
+          estado: 'pendiente'
+        });
+      }
 
       // Notificar al componente padre
       if (onReservaCreada) {
-        onReservaCreada(resultado);
+        setTimeout(() => {
+          onReservaCreada(resultado);
+        }, 1500); // Dar tiempo para ver el mensaje de éxito
       }
 
     } catch (error) {
-      console.error('❌ Error al crear reserva:', error);
-      setError(error.message || 'Error al crear la reserva');
+      console.error(`❌ Error al ${reservaEditando ? 'actualizar' : 'crear'} reserva:`, error);
+      setError(error.message || `Error al ${reservaEditando ? 'actualizar' : 'crear'} la reserva`);
     } finally {
       setLoading(false);
     }
@@ -172,7 +257,7 @@ const FormularioReserva = ({ onReservaCreada, fechaSeleccionada = null }) => {
 
   return (
     <div className="formulario-reserva">
-      <h3>Nueva Reserva</h3>
+      <h3>{reservaEditando ? 'Editar Reserva' : 'Nueva Reserva'}</h3>
       
       {error && (
         <div className="alert alert-error">
@@ -235,6 +320,30 @@ const FormularioReserva = ({ onReservaCreada, fechaSeleccionada = null }) => {
           />
         </div>
 
+        <div className="form-group formato-hora">
+          <label>Formato de Hora:</label>
+          <div className="radio-group">
+            <label className="radio-option">
+              <input
+                type="radio"
+                value="24h"
+                checked={formatoHora === '24h'}
+                onChange={(e) => setFormatoHora(e.target.value)}
+              />
+              24 Horas (23:00)
+            </label>
+            <label className="radio-option">
+              <input
+                type="radio"
+                value="ampm"
+                checked={formatoHora === 'ampm'}
+                onChange={(e) => setFormatoHora(e.target.value)}
+              />
+              AM/PM (11:00 PM)
+            </label>
+          </div>
+        </div>
+
         <div className="form-row">
           <div className="form-group">
             <label htmlFor="hora_inicio">Hora Inicio:</label>
@@ -244,6 +353,7 @@ const FormularioReserva = ({ onReservaCreada, fechaSeleccionada = null }) => {
               name="hora_inicio"
               value={formData.hora_inicio}
               onChange={handleInputChange}
+              step="300"
               required
             />
           </div>
@@ -256,10 +366,32 @@ const FormularioReserva = ({ onReservaCreada, fechaSeleccionada = null }) => {
               name="hora_fin"
               value={formData.hora_fin}
               onChange={handleInputChange}
+              step="300"
               required
             />
           </div>
         </div>
+
+        {formatoHora === 'ampm' && formData.hora_inicio && formData.hora_fin && (
+          <div className="hora-preview">
+            <p><strong>Vista previa:</strong></p>
+            <p>Inicio: {convertirA12h(formData.hora_inicio).hora} {convertirA12h(formData.hora_inicio).periodo}</p>
+            <p>Fin: {convertirA12h(formData.hora_fin).hora} {convertirA12h(formData.hora_fin).periodo}</p>
+          </div>
+        )}
+
+        {formData.fecha_reserva && formData.hora_inicio && (
+          <div className="fecha-preview">
+            <p><strong>📅 Esta reserva aparecerá en:</strong></p>
+            <p>Fecha seleccionada: {new Date(formData.fecha_reserva + 'T00:00:00').toLocaleDateString('es-ES')}</p>
+            <p>Aparecerá en calendario del: {new Date(calcularFechaCorrecta(formData.fecha_reserva, formData.hora_inicio) + 'T00:00:00').toLocaleDateString('es-ES')}</p>
+            {calcularFechaCorrecta(formData.fecha_reserva, formData.hora_inicio) !== formData.fecha_reserva && (
+              <p className="fecha-info">
+                ℹ️ Las reservas entre 00:00 y 05:59 se asignan al día siguiente
+              </p>
+            )}
+          </div>
+        )}
 
         {validandoDisponibilidad && (
           <div className="availability-check">
@@ -291,7 +423,18 @@ const FormularioReserva = ({ onReservaCreada, fechaSeleccionada = null }) => {
             disabled={loading || !disponible || validandoDisponibilidad}
             className="btn btn-primary"
           >
-            {loading ? '⏳ Creando...' : 'Crear Reserva'}
+            {loading 
+              ? (reservaEditando ? '⏳ Actualizando...' : '⏳ Creando...') 
+              : (reservaEditando ? 'Actualizar Reserva' : 'Crear Reserva')
+            }
+          </button>
+          <button
+            type="button"
+            onClick={onCancelar}
+            className="btn btn-secondary"
+            disabled={loading}
+          >
+            Cancelar
           </button>
         </div>
       </form>

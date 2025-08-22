@@ -6,43 +6,61 @@
 }
 
 .btn-checkin {
-    padding: 0.5rem 1rem;
+    min-width: 80px;
+    height: 36px;
+    padding: 0.5rem 0.75rem;
     background: #28a745;
     color: white;
     border: none;
     border-radius: 5px;
     cursor: pointer;
     font-weight: 600;
+    font-size: 0.75rem;
     transition: background 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .btn-checkin:hover:not(:disabled) {
     background: #218838;
+    transform: translateY(-1px);
 }
 
 .btn-checkin:disabled {
-    background: #6c757d;
+    background: #a0a0a0;
     cursor: not-allowed;
+    opacity: 0.6;
+    transform: none;
 }
 
 .btn-checkout {
-    padding: 0.4rem 0.8rem;
+    min-width: 80px;
+    height: 32px;
+    padding: 0.4rem 0.75rem;
     background: #dc3545;
     color: white;
     border: none;
     border-radius: 4px;
     cursor: pointer;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
+    font-weight: 600;
     transition: background 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .btn-checkout:hover:not(:disabled) {
     background: #c82333;
+    transform: translateY(-1px);
 }
 
 .btn-checkout:disabled {
-    background: #6c757d;
+    background: #a0a0a0;
     cursor: not-allowed;
+    opacity: 0.6;
+    transform: none;
 }
 
 .en-curso {

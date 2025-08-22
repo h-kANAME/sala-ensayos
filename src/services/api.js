@@ -13,7 +13,7 @@ const apiRequest = async (url, options = {}) => {
   };
 
   // Si hay un token, agregarlo
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem('authToken');
   if (token) {
     defaultOptions.headers.Authorization = `Bearer ${token}`;
   }
@@ -31,13 +31,48 @@ const apiRequest = async (url, options = {}) => {
     if (!response.ok) {
       const errorText = await response.text();
       console.error('❌ Error response:', errorText);
-      throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+      
+      // Intentar parsear el JSON de error para obtener el mensaje específico
+      let errorMessage;
+      try {
+        const errorData = JSON.parse(errorText);
+        errorMessage = errorData.message || errorText;
+      } catch (parseError) {
+        errorMessage = errorText;
+      }
+      
+      // Crear error con información estructurada
+      const error = new Error(errorMessage);
+      error.response = {
+        status: response.status,
+        data: { message: errorMessage }
+      };
+      throw error;
     }
 
-    const data = await response.json();
-    console.log('✅ Response data:', data);
+    // Verificar si hay contenido antes de intentar parsear JSON
+    const responseText = await response.text();
     
-    return data;
+    let data;
+    if (responseText.trim()) {
+      try {
+        data = JSON.parse(responseText);
+      } catch (parseError) {
+        console.error('❌ Error parsing JSON:', parseError);
+        console.error('❌ Response text:', responseText);
+        // Si no es JSON válido, usar el texto como respuesta
+        data = { message: responseText };
+      }
+    } else {
+      // Respuesta vacía, crear objeto por defecto
+      data = { success: true, message: 'Operación completada exitosamente' };
+    }
+    
+    console.log('✅ Response data:', data);
+    console.log('✅ Response data type:', typeof data);
+    console.log('✅ Response is array:', Array.isArray(data));
+    
+    return { data };
   } catch (error) {
     console.error('🔥 API Error:', error);
     throw error;

@@ -21,7 +21,7 @@ const CheckInButton = ({ reserva, onCheckInSuccess }) => {
             if (result.success) {
                 alert('✅ Check-in registrado exitosamente');
                 // Actualizar el estado local inmediatamente
-                reserva.estado_actual = 'presente';
+                reserva.estado_actual = 'PRESENTE';
                 reserva.hora_ingreso = new Date().toISOString().slice(0, 19).replace('T', ' ');
                 
                 if (onCheckInSuccess) {
@@ -53,7 +53,7 @@ const CheckInButton = ({ reserva, onCheckInSuccess }) => {
             if (result.success) {
                 alert('✅ Check-out registrado exitosamente');
                 // Actualizar el estado local inmediatamente
-                reserva.estado_actual = 'finalizada';
+                reserva.estado_actual = 'FINALIZADA';
                 reserva.hora_salida = new Date().toISOString().slice(0, 19).replace('T', ' ');
                 
                 if (onCheckInSuccess) {
@@ -100,7 +100,7 @@ const CheckInButton = ({ reserva, onCheckInSuccess }) => {
 
     return (
         <div className="checkin-container">
-            {reserva.estado_actual === 'pendiente' && (
+            {(reserva.estado_actual === 'PENDIENTE' || reserva.estado_actual === 'pendiente') && (
                 <button 
                     onClick={handleCheckIn}
                     disabled={loading}
@@ -110,7 +110,7 @@ const CheckInButton = ({ reserva, onCheckInSuccess }) => {
                 </button>
             )}
             
-            {reserva.estado_actual === 'presente' && (
+            {(reserva.estado_actual === 'PRESENTE' || reserva.estado_actual === 'presente') && (
                 <div className="en-curso">
                     <span className="badge-en-curso">En curso</span>
                     <span className="tiempo">{getTiempoTranscurrido()}</span>
@@ -124,11 +124,11 @@ const CheckInButton = ({ reserva, onCheckInSuccess }) => {
                 </div>
             )}
             
-            {reserva.estado_actual === 'finalizada' && (
+            {(reserva.estado_actual === 'FINALIZADA' || reserva.estado_actual === 'finalizada') && (
                 <span className="badge-finalizada">Finalizada</span>
             )}
             
-            {reserva.estado_actual === 'ausente' && (
+            {(reserva.estado_actual === 'AUSENTE' || reserva.estado_actual === 'ausente') && (
                 <span className="badge-ausente">Ausente</span>
             )}
         </div>

@@ -1,0 +1,367 @@
+/* Estilos para GestionStock */
+.gestion-stock {
+    padding: 1rem;
+}
+
+.stock-header {
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.stock-header h2 {
+    color: #333;
+    margin: 0 0 1rem 0;
+    font-weight: 600;
+}
+
+.stock-disclaimer {
+    background: #fff3cd;
+    color: #856404;
+    padding: 1rem;
+    border-radius: 6px;
+    border: 1px solid #ffeeba;
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+.stock-content {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 2rem;
+}
+
+.busqueda-section h3,
+.actualizacion-section h3 {
+    color: #333;
+    margin-bottom: 1rem;
+    font-weight: 600;
+    font-size: 1.25rem;
+}
+
+/* Sección de búsqueda */
+.search-box {
+    position: relative;
+    margin-bottom: 1.5rem;
+}
+
+.search-input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.search-loading {
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #666;
+    font-size: 0.85rem;
+}
+
+/* Lista de productos */
+.productos-lista {
+    max-height: 500px;
+    overflow-y: auto;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    background: white;
+}
+
+.producto-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: 1px solid #f0f0f0;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.producto-card:hover {
+    background: #f8f9fa;
+}
+
+.producto-card.selected {
+    background: #e3f2fd;
+    border-color: #007bff;
+}
+
+.producto-card:last-child {
+    border-bottom: none;
+}
+
+.producto-info h4 {
+    margin: 0 0 0.25rem 0;
+    color: #333;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.producto-info .descripcion {
+    color: #666;
+    font-size: 0.85rem;
+    margin: 0 0 0.5rem 0;
+}
+
+.producto-details {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.categoria {
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.categoria-consumible {
+    background: #e3f2fd;
+    color: #1565c0;
+}
+
+.categoria-equipo {
+    background: #f3e5f5;
+    color: #7b1fa2;
+}
+
+.precio {
+    color: #28a745;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.producto-stock {
+    text-align: right;
+}
+
+.stock-actual {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.stock-label {
+    font-size: 0.8rem;
+    color: #666;
+    margin-bottom: 0.25rem;
+}
+
+.stock-value {
+    font-weight: bold;
+    font-size: 1.1rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    background: #e8f5e8;
+    color: #155724;
+}
+
+.stock-value.stock-bajo {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.stock-warning {
+    font-size: 0.75rem;
+    color: #dc3545;
+    margin-top: 0.25rem;
+}
+
+.no-productos {
+    text-align: center;
+    padding: 2rem;
+    color: #666;
+    font-style: italic;
+}
+
+/* Sección de actualización */
+.actualizacion-section {
+    background: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    height: fit-content;
+    position: sticky;
+    top: 1rem;
+}
+
+.producto-seleccionado h4 {
+    color: #333;
+    margin: 0 0 1rem 0;
+    font-size: 1.1rem;
+}
+
+.selected-product-info {
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 6px;
+    margin-bottom: 1.5rem;
+}
+
+.selected-product-info p {
+    margin: 0.5rem 0;
+    color: #333;
+}
+
+.selected-product-info p:first-child {
+    margin-top: 0;
+}
+
+.selected-product-info p:last-child {
+    margin-bottom: 0;
+}
+
+.current-stock {
+    font-weight: bold;
+    color: #007bff;
+}
+
+.stock-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.form-group input {
+    padding: 0.75rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.form-group input:disabled {
+    background: #f8f9fa;
+    cursor: not-allowed;
+}
+
+.stock-preview {
+    background: #d4edda;
+    color: #155724;
+    padding: 0.75rem;
+    border-radius: 6px;
+    border: 1px solid #c3e6cb;
+    text-align: center;
+}
+
+.btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    text-align: center;
+}
+
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.btn-primary {
+    background: #007bff;
+    color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+    background: #0056b3;
+    transform: translateY(-1px);
+}
+
+.no-selection {
+    text-align: center;
+    color: #666;
+    padding: 2rem;
+    font-style: italic;
+}
+
+.error-message {
+    background: #f8d7da;
+    color: #721c24;
+    padding: 1rem;
+    border-radius: 6px;
+    margin-bottom: 1rem;
+    border: 1px solid #f5c6cb;
+    font-weight: 500;
+}
+
+.success-message {
+    background: #d4edda;
+    color: #155724;
+    padding: 1rem;
+    border-radius: 6px;
+    margin-bottom: 1rem;
+    border: 1px solid #c3e6cb;
+    font-weight: 500;
+}
+
+@media (max-width: 1024px) {
+    .stock-content {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    
+    .actualizacion-section {
+        position: static;
+    }
+}
+
+@media (max-width: 768px) {
+    .gestion-stock {
+        padding: 0.5rem;
+    }
+    
+    .producto-card {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .producto-stock {
+        text-align: left;
+        width: 100%;
+    }
+    
+    .stock-actual {
+        flex-direction: row;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .actualizacion-section {
+        padding: 1rem;
+    }
+}

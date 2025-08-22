@@ -1,9 +1,10 @@
 import React from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { Link } from 'react-router-dom';
 import './Layout.css';
 
 const Layout = ({ children }) => {
-    const { user, logout } = useAuth();
+    const { user, logout, isAdmin } = useAuth();
 
     const handleLogout = () => {
         logout();
@@ -26,12 +27,20 @@ const Layout = ({ children }) => {
 
             <nav className="layout-nav">
                 <ul className="nav-menu">
-                    <li><a href="#dashboard">Dashboard</a></li>
-                    <li><a href="#reservas">Reservas</a></li>
-                    <li><a href="#clientes">Clientes</a></li>
-                    <li><a href="#productos">Productos</a></li>
+                    <li><Link to="/dashboard">Dashboard</Link></li>
+                    {/* <li><a href="#reservas">Reservas</a></li> */}
+                    <li><Link to="/clientes">Clientes</Link></li>
+                    
+                    {/* Solo admins pueden acceder a Productos y Reportes */}
+                    {isAdmin && (
+                        <>
+                            <li><Link to="/productos">Productos</Link></li>
+                            <li><a href="#reportes">Reportes</a></li>
+                        </>
+                    )}
+                    
+                    {/* Todos pueden acceder a Ventas */}
                     <li><a href="#ventas">Ventas</a></li>
-                    <li><a href="#reportes">Reportes</a></li>
                 </ul>
             </nav>
 

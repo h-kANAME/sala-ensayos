@@ -1,0 +1,62 @@
+/* Estilos para la página de Productos - Similar al Dashboard */
+.productos {
+    padding: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.productos-tabs {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    border-bottom: 2px solid #e0e0e0;
+    padding-bottom: 1rem;
+}
+
+.productos-tabs button {
+    padding: 0.75rem 1.5rem;
+    background: #f8f9fa;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #666;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.productos-tabs button:hover {
+    background: #e9ecef;
+    color: #333;
+    transform: translateY(-1px);
+}
+
+.productos-tabs button.active {
+    background: #007bff;
+    color: white;
+    border-color: #007bff;
+    box-shadow: 0 2px 4px rgba(0, 123, 255, 0.3);
+}
+
+.productos-tabs button.active:hover {
+    background: #0056b3;
+    transform: translateY(-1px);
+}
+
+@media (max-width: 768px) {
+    .productos {
+        padding: 1rem;
+    }
+    
+    .productos-tabs {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .productos-tabs button {
+        text-align: center;
+    }
+}
