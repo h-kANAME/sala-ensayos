@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { ventasService } from '../../services/ventasService';
+import FiltrosFechas from './FiltrosFechas';
+import Paginador from './Paginador';
 import './ListaVentas.css';
 
 const ListaVentas = () => {
@@ -13,21 +15,51 @@ const ListaVentas = () => {
     const [ventaSeleccionada, setVentaSeleccionada] = useState(null);
     const [detalleVenta, setDetalleVenta] = useState(null);
     const [mostrarModal, setMostrarModal] = useState(false);
+    
+    // Estados para paginación
+    const [paginaActual, setPaginaActual] = useState(1);
+    const [totalPaginas, setTotalPaginas] = useState(0);
+    const [totalRegistros, setTotalRegistros] = useState(0);
+    const registrosPorPagina = 10;
+    
+    // Estados para filtros
+    const [filtrosActivos, setFiltrosActivos] = useState({});
 
+    // Cargar ventas con filtros y paginación al inicializar
     useEffect(() => {
-        cargarVentas();
+        const hoy = new Date().toISOString().split('T')[0];
+        const filtrosIniciales = {
+            fecha_inicio: hoy,
+            fecha_fin: hoy
+        };
+        setFiltrosActivos(filtrosIniciales);
+        cargarVentasConFiltros(filtrosIniciales, 1);
     }, []);
 
-    const cargarVentas = async () => {
+    const cargarVentasConFiltros = async (filtros = {}, pagina = 1) => {
         try {
             setLoading(true);
             setError('');
-            const data = await ventasService.obtenerVentas();
-            setVentas(Array.isArray(data) ? data : []);
+            
+            const params = {
+                ...filtros,
+                pagina: pagina,
+                limite: registrosPorPagina
+            };
+            
+            const data = await ventasService.obtenerVentasConFiltros(params);
+            
+            setVentas(Array.isArray(data.ventas) ? data.ventas : []);
+            setTotalRegistros(data.total || 0);
+            setTotalPaginas(Math.ceil((data.total || 0) / registrosPorPagina));
+            setPaginaActual(pagina);
+            
         } catch (err) {
             console.error('Error cargando ventas:', err);
             setError(err.message);
             setVentas([]);
+            setTotalRegistros(0);
+            setTotalPaginas(0);
         } finally {
             setLoading(false);
         }
@@ -39,12 +71,21 @@ const ListaVentas = () => {
                 console.log('❌ Anulando venta ID:', id);
                 const response = await ventasService.anularVenta(id);
                 console.log('✅ Venta anulada:', response);
-                cargarVentas(); // Recargar lista
+                cargarVentasConFiltros(filtrosActivos, paginaActual); // Recargar lista
             } catch (err) {
                 console.error('❌ Error anulando venta:', err);
                 setError(err.message);
             }
         }
+    };
+
+    const handleFiltrosChange = (nuevosFiltros) => {
+        setFiltrosActivos(nuevosFiltros);
+        cargarVentasConFiltros(nuevosFiltros, 1); // Resetear a página 1 al filtrar
+    };
+
+    const handleCambioPagina = (nuevaPagina) => {
+        cargarVentasConFiltros(filtrosActivos, nuevaPagina);
     };
 
     const handleVerDetalle = async (venta) => {
@@ -96,6 +137,12 @@ const ListaVentas = () => {
                     + Nueva Venta
                 </button>
             </div>
+
+            {/* Filtros de Fechas */}
+            <FiltrosFechas 
+                onFiltrosChange={handleFiltrosChange}
+                filtrosIniciales={filtrosActivos}
+            />
 
             <div className="table-responsive">
                 <table className="table">
@@ -166,6 +213,15 @@ const ListaVentas = () => {
                     </tbody>
                 </table>
             </div>
+
+            {/* Paginador */}
+            <Paginador
+                paginaActual={paginaActual}
+                totalPaginas={totalPaginas}
+                totalRegistros={totalRegistros}
+                registrosPorPagina={registrosPorPagina}
+                onCambioPagina={handleCambioPagina}
+            />
 
             {/* Modal de detalle de venta */}
             {mostrarModal && detalleVenta && (

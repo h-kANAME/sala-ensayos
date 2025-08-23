@@ -413,14 +413,36 @@ class Reserva
     // Actualizar estados automáticamente basado en horarios
     public function actualizarEstadosAutomaticos()
     {
+        // Log para debug
+        error_log("=== ACTUALIZANDO ESTADOS AUTOMATICOS ===");
+        error_log("Hora actual servidor: " . date('Y-m-d H:i:s'));
+        
+        // Primero verificar qué reservas serían afectadas
+        $queryCheck = "SELECT id, fecha_reserva, hora_inicio, 
+                              CONCAT(fecha_reserva, ' ', hora_inicio) as fecha_hora_inicio,
+                              DATE_SUB(NOW(), INTERVAL 15 MINUTE) as limite_ausencia
+                       FROM " . $this->table_name . " 
+                       WHERE estado_actual = 'pendiente'";
+        
+        $stmtCheck = $this->conn->prepare($queryCheck);
+        $stmtCheck->execute();
+        
+        while ($row = $stmtCheck->fetch(PDO::FETCH_ASSOC)) {
+            error_log("Reserva ID: {$row['id']} - Inicio: {$row['fecha_hora_inicio']} - Límite: {$row['limite_ausencia']}");
+        }
+        
         // Marcar como ausente las reservas que no hicieron check-in después de 15 min de la hora de inicio
+        // SOLO si la reserva ya debería haber comenzado (la hora de inicio ya pasó hace más de 15 min)
         $query1 = "UPDATE " . $this->table_name . " 
                    SET estado_actual = 'ausente' 
                    WHERE estado_actual = 'pendiente' 
-                   AND CONCAT(fecha_reserva, ' ', hora_inicio) < DATE_SUB(NOW(), INTERVAL 15 MINUTE)";
+                   AND CONCAT(fecha_reserva, ' ', hora_inicio) <= DATE_SUB(NOW(), INTERVAL 15 MINUTE)";
         
         $stmt1 = $this->conn->prepare($query1);
         $stmt1->execute();
+        
+        $reservasAfectadas = $stmt1->rowCount();
+        error_log("Reservas marcadas como ausente: " . $reservasAfectadas);
         
         return true;
     }

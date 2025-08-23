@@ -102,30 +102,90 @@ switch ($_SERVER['REQUEST_METHOD']) {
             }
             
         } else {
-            // Obtener todas las ventas
+            // Obtener ventas con filtros
             try {
-                $stmt = $venta->obtenerTodas();
-                $ventas = [];
+                $filtros = [];
                 
-                while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                    extract($row);
-                    $venta_item = array(
-                        'id' => $id,
-                        'cliente_id' => $cliente_id,
-                        'cliente_nombre' => $cliente_nombre,
-                        'cliente_apellido' => $cliente_apellido,
-                        'usuario_id' => $usuario_id,
-                        'usuario_nombre' => $usuario_nombre,
-                        'fecha_venta' => $fecha_venta,
-                        'total' => floatval($total),
-                        'tipo_pago' => $tipo_pago,
-                        'notas' => $notas,
-                        'anulada' => boolval($anulada)
-                    );
-                    array_push($ventas, $venta_item);
+                // Recoger filtros desde parámetros GET
+                if (isset($_GET['fecha_inicio'])) $filtros['fecha_inicio'] = $_GET['fecha_inicio'];
+                if (isset($_GET['fecha_fin'])) $filtros['fecha_fin'] = $_GET['fecha_fin'];
+                if (isset($_GET['tipo_pago']) && $_GET['tipo_pago'] !== '') $filtros['tipo_pago'] = $_GET['tipo_pago'];
+                if (isset($_GET['anulada'])) $filtros['anulada'] = $_GET['anulada'] === 'true';
+                if (isset($_GET['cliente']) && $_GET['cliente'] !== '') $filtros['cliente'] = $_GET['cliente'];
+                if (isset($_GET['usuario_id']) && $_GET['usuario_id'] !== '') $filtros['usuario_id'] = $_GET['usuario_id'];
+                
+                // Parámetros de paginación
+                if (isset($_GET['pagina'])) $filtros['pagina'] = intval($_GET['pagina']);
+                if (isset($_GET['limite'])) $filtros['limite'] = intval($_GET['limite']);
+                
+                // Si no hay filtros específicos, usar obtenerTodas() 
+                if (empty($filtros)) {
+                    $stmt = $venta->obtenerTodas();
+                    $ventas = [];
+                    $contador = 0;
+                    
+                    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                        extract($row);
+                        $venta_item = array(
+                            'id' => $id,
+                            'cliente_id' => $cliente_id,
+                            'cliente_nombre' => $cliente_nombre,
+                            'cliente_apellido' => $cliente_apellido,
+                            'usuario_id' => $usuario_id,
+                            'usuario_nombre' => $usuario_nombre,
+                            'fecha_venta' => $fecha_venta,
+                            'total' => floatval($total),
+                            'tipo_pago' => $tipo_pago,
+                            'notas' => $notas,
+                            'anulada' => boolval($anulada)
+                        );
+                        array_push($ventas, $venta_item);
+                        $contador++;
+                    }
+                    
+                    // Para compatibilidad, devolver array simple si no hay paginación
+                    echo json_encode($ventas);
+                    
+                } else {
+                    $resultado = $venta->obtenerConFiltros($filtros);
+                    $stmt = $resultado['stmt'];
+                    $totalRegistros = $resultado['total'];
+                    
+                    $ventas = [];
+                    
+                    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                        extract($row);
+                        $venta_item = array(
+                            'id' => $id,
+                            'cliente_id' => $cliente_id,
+                            'cliente_nombre' => $cliente_nombre,
+                            'cliente_apellido' => $cliente_apellido,
+                            'usuario_id' => $usuario_id,
+                            'usuario_nombre' => $usuario_nombre,
+                            'fecha_venta' => $fecha_venta,
+                            'total' => floatval($total),
+                            'tipo_pago' => $tipo_pago,
+                            'notas' => $notas,
+                            'anulada' => boolval($anulada)
+                        );
+                        array_push($ventas, $venta_item);
+                    }
+                    
+                    // Si hay paginación, devolver formato estructurado
+                    if (isset($filtros['pagina']) && isset($filtros['limite'])) {
+                        $response = array(
+                            'ventas' => $ventas,
+                            'total' => intval($totalRegistros),
+                            'pagina' => intval($filtros['pagina']),
+                            'limite' => intval($filtros['limite']),
+                            'total_paginas' => ceil($totalRegistros / intval($filtros['limite']))
+                        );
+                        echo json_encode($response);
+                    } else {
+                        // Sin paginación, devolver array simple
+                        echo json_encode($ventas);
+                    }
                 }
-                
-                echo json_encode($ventas);
             } catch (Exception $e) {
                 http_response_code(500);
                 echo json_encode(['success' => false, 'message' => 'Error obteniendo ventas: ' . $e->getMessage()]);

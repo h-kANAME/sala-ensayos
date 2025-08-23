@@ -67,12 +67,53 @@ export const ventasService = {
         }
     },
 
-    // Obtener ventas por rango de fechas
+    // Obtener ventas con filtros
+    obtenerVentasConFiltros: async (filtros = {}) => {
+        try {
+            console.log('🔍 ventasService.obtenerVentasConFiltros() - Iniciando...', filtros);
+            const params = new URLSearchParams();
+            
+            Object.entries(filtros).forEach(([key, value]) => {
+                if (value !== null && value !== undefined && value !== '') {
+                    params.append(key, value);
+                }
+            });
+            
+            const queryString = params.toString();
+            const url = queryString ? `/ventas?${queryString}` : '/ventas';
+            
+            const response = await api.get(url);
+            
+            // Si es respuesta paginada, retornar directamente
+            if (response.data && typeof response.data === 'object' && response.data.ventas) {
+                return response.data;
+            }
+            
+            // Si es un array, convertir al formato paginado
+            const data = response.data || response;
+            if (Array.isArray(data)) {
+                return {
+                    ventas: data,
+                    total: data.length,
+                    pagina: 1,
+                    limite: data.length
+                };
+            }
+            
+            return response.data || response;
+        } catch (error) {
+            throw new Error(error.response?.data?.message || error.message || 'Error obteniendo ventas con filtros');
+        }
+    },
+
+    // Obtener ventas por rango de fechas (mantenido para compatibilidad)
     obtenerVentasPorFechas: async (fechaInicio, fechaFin) => {
         try {
             console.log(`📅 ventasService.obtenerVentasPorFechas(${fechaInicio}, ${fechaFin}) - Iniciando...`);
-            const response = await api.get(`/ventas?fecha_inicio=${fechaInicio}&fecha_fin=${fechaFin}`);
-            return response.data || response;
+            return await ventasService.obtenerVentasConFiltros({
+                fecha_inicio: fechaInicio,
+                fecha_fin: fechaFin
+            });
         } catch (error) {
             throw new Error(error.response?.data?.message || error.message || 'Error obteniendo ventas por fechas');
         }

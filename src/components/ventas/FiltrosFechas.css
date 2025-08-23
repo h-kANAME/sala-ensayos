@@ -1,0 +1,98 @@
+.filtros-fechas {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.filtros-container h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: #333;
+    font-size: 16px;
+    border-bottom: 2px solid #007bff;
+    padding-bottom: 8px;
+}
+
+.fechas-row {
+    display: flex;
+    gap: 15px;
+    align-items: end;
+}
+
+.fecha-campo {
+    display: flex;
+    flex-direction: column;
+    min-width: 150px;
+}
+
+.fecha-campo label {
+    margin-bottom: 5px;
+    font-weight: 500;
+    color: #555;
+    font-size: 14px;
+}
+
+.fecha-campo input {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: border-color 0.3s ease;
+}
+
+.fecha-campo input:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.boton-campo {
+    display: flex;
+    align-items: center;
+}
+
+.btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background-color 0.3s ease;
+}
+
+.btn-primary {
+    background-color: #007bff;
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+}
+
+.btn-primary:active {
+    background-color: #004085;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .fechas-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .fecha-campo {
+        min-width: auto;
+    }
+    
+    .boton-campo {
+        margin-top: 10px;
+    }
+    
+    .btn {
+        width: 100%;
+        padding: 10px;
+    }
+}

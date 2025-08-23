@@ -34,6 +34,98 @@ class Venta {
         return $stmt;
     }
 
+    // Obtener ventas con filtros avanzados y paginación
+    public function obtenerConFiltros($filtros = []) {
+        $baseQuery = "SELECT v.id, v.cliente_id, v.usuario_id, v.fecha_venta, v.total, 
+                             v.tipo_pago, v.notas, v.anulada,
+                             c.nombre_banda as cliente_nombre, c.contacto_nombre as cliente_apellido,
+                             u.nombre_completo as usuario_nombre
+                      FROM " . $this->table_name . " v
+                      LEFT JOIN clientes c ON v.cliente_id = c.id
+                      LEFT JOIN usuarios u ON v.usuario_id = u.id
+                      WHERE 1=1";
+        
+        $countQuery = "SELECT COUNT(*) as total
+                       FROM " . $this->table_name . " v
+                       LEFT JOIN clientes c ON v.cliente_id = c.id
+                       LEFT JOIN usuarios u ON v.usuario_id = u.id
+                       WHERE 1=1";
+        
+        $params = [];
+        $whereClause = "";
+        
+        // Filtro por rango de fechas
+        if (!empty($filtros['fecha_inicio'])) {
+            $whereClause .= " AND DATE(v.fecha_venta) >= :fecha_inicio";
+            $params[':fecha_inicio'] = $filtros['fecha_inicio'];
+        }
+        
+        if (!empty($filtros['fecha_fin'])) {
+            $whereClause .= " AND DATE(v.fecha_venta) <= :fecha_fin";
+            $params[':fecha_fin'] = $filtros['fecha_fin'];
+        }
+        
+        // Filtro por tipo de pago
+        if (!empty($filtros['tipo_pago'])) {
+            $whereClause .= " AND v.tipo_pago = :tipo_pago";
+            $params[':tipo_pago'] = $filtros['tipo_pago'];
+        }
+        
+        // Filtro por estado
+        if (isset($filtros['anulada'])) {
+            $whereClause .= " AND v.anulada = :anulada";
+            $params[':anulada'] = $filtros['anulada'] ? 1 : 0;
+        }
+        
+        // Filtro por cliente (buscar en nombre_banda y contacto_nombre)
+        if (!empty($filtros['cliente'])) {
+            $whereClause .= " AND (c.nombre_banda LIKE :cliente OR c.contacto_nombre LIKE :cliente)";
+            $params[':cliente'] = "%" . $filtros['cliente'] . "%";
+        }
+        
+        // Filtro por usuario
+        if (!empty($filtros['usuario_id'])) {
+            $whereClause .= " AND v.usuario_id = :usuario_id";
+            $params[':usuario_id'] = $filtros['usuario_id'];
+        }
+        
+        // Contar total de registros
+        $countStmt = $this->conn->prepare($countQuery . $whereClause);
+        foreach ($params as $param => $value) {
+            $countStmt->bindValue($param, $value);
+        }
+        $countStmt->execute();
+        $total = $countStmt->fetch(PDO::FETCH_ASSOC)['total'];
+        
+        // Construir query con paginación
+        $query = $baseQuery . $whereClause . " ORDER BY v.fecha_venta DESC";
+        
+        // Agregar LIMIT y OFFSET para paginación
+        if (isset($filtros['limite']) && isset($filtros['pagina'])) {
+            $limite = intval($filtros['limite']);
+            $pagina = intval($filtros['pagina']);
+            $offset = ($pagina - 1) * $limite;
+            
+            $query .= " LIMIT :limite OFFSET :offset";
+            $params[':limite'] = $limite;
+            $params[':offset'] = $offset;
+        }
+        
+        $stmt = $this->conn->prepare($query);
+        
+        // Bind de parámetros
+        foreach ($params as $param => $value) {
+            $stmt->bindValue($param, $value, is_int($value) ? PDO::PARAM_INT : PDO::PARAM_STR);
+        }
+        
+        $stmt->execute();
+        
+        return [
+            'stmt' => $stmt,
+            'total' => $total
+        ];
+    }
+
     // Obtener venta por ID
     public function obtenerPorId($id) {
         $query = "SELECT v.id, v.cliente_id, v.usuario_id, v.fecha_venta, v.total, 
@@ -59,8 +151,7 @@ class Venta {
                          p.nombre as producto_nombre, p.descripcion as producto_descripcion
                   FROM " . $this->table_items . " vi
                   LEFT JOIN productos p ON vi.producto_id = p.id
-                  WHERE vi.venta_id = :venta_id
-                  ORDER BY vi.id ASC";
+                  WHERE vi.venta_id = :venta_id";
         
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(':venta_id', $venta_id);
@@ -74,21 +165,12 @@ class Venta {
         try {
             $this->conn->beginTransaction();
             
-            // Insertar venta
             $query = "INSERT INTO " . $this->table_name . " 
-                      (cliente_id, usuario_id, fecha_venta, total, tipo_pago, notas, anulada) 
-                      VALUES (:cliente_id, :usuario_id, NOW(), :total, :tipo_pago, :notas, 0)";
+                      (cliente_id, usuario_id, fecha_venta, total, tipo_pago, notas) 
+                      VALUES (:cliente_id, :usuario_id, NOW(), :total, :tipo_pago, :notas)";
             
             $stmt = $this->conn->prepare($query);
             
-            // Limpiar datos
-            $this->cliente_id = htmlspecialchars(strip_tags($this->cliente_id));
-            $this->usuario_id = htmlspecialchars(strip_tags($this->usuario_id));
-            $this->total = htmlspecialchars(strip_tags($this->total));
-            $this->tipo_pago = htmlspecialchars(strip_tags($this->tipo_pago));
-            $this->notas = htmlspecialchars(strip_tags($this->notas));
-            
-            // Bind valores
             $stmt->bindParam(':cliente_id', $this->cliente_id);
             $stmt->bindParam(':usuario_id', $this->usuario_id);
             $stmt->bindParam(':total', $this->total);
@@ -101,11 +183,11 @@ class Venta {
                 return $venta_id;
             }
             
-            $this->conn->rollBack();
+            $this->conn->rollback();
             return false;
-        } catch (Exception $e) {
-            $this->conn->rollBack();
-            return false;
+        } catch (PDOException $e) {
+            $this->conn->rollback();
+            throw $e;
         }
     }
 
@@ -117,14 +199,6 @@ class Venta {
         
         $stmt = $this->conn->prepare($query);
         
-        // Limpiar datos
-        $venta_id = htmlspecialchars(strip_tags($venta_id));
-        $producto_id = htmlspecialchars(strip_tags($producto_id));
-        $cantidad = htmlspecialchars(strip_tags($cantidad));
-        $precio_unitario = htmlspecialchars(strip_tags($precio_unitario));
-        $subtotal = htmlspecialchars(strip_tags($subtotal));
-        
-        // Bind valores
         $stmt->bindParam(':venta_id', $venta_id);
         $stmt->bindParam(':producto_id', $producto_id);
         $stmt->bindParam(':cantidad', $cantidad);
@@ -134,97 +208,48 @@ class Venta {
         return $stmt->execute();
     }
 
-    // Actualizar stock de productos
-    public function actualizarStockProducto($producto_id, $cantidad_vendida) {
-        $query = "UPDATE productos 
-                  SET stock = stock - :cantidad 
-                  WHERE id = :producto_id";
+    // Anular venta
+    public function anular($id) {
+        $query = "UPDATE " . $this->table_name . " SET anulada = 1 WHERE id = :id";
         
         $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(':producto_id', $producto_id);
-        $stmt->bindParam(':cantidad', $cantidad_vendida);
+        $stmt->bindParam(':id', $id);
         
         return $stmt->execute();
     }
 
-    // Anular venta
-    public function anular($id) {
-        try {
-            $this->conn->beginTransaction();
-            
-            // Obtener items de la venta para restaurar stock
-            $items = $this->obtenerItems($id);
-            while ($item = $items->fetch(PDO::FETCH_ASSOC)) {
-                // Restaurar stock
-                $query_stock = "UPDATE productos 
-                               SET stock = stock + :cantidad 
-                               WHERE id = :producto_id";
-                $stmt_stock = $this->conn->prepare($query_stock);
-                $stmt_stock->bindParam(':cantidad', $item['cantidad']);
-                $stmt_stock->bindParam(':producto_id', $item['producto_id']);
-                $stmt_stock->execute();
-            }
-            
-            // Marcar venta como anulada
-            $query = "UPDATE " . $this->table_name . " 
-                      SET anulada = 1 
-                      WHERE id = :id";
-            
-            $stmt = $this->conn->prepare($query);
-            $stmt->bindParam(':id', $id);
-            
-            if ($stmt->execute()) {
-                $this->conn->commit();
-                return true;
-            }
-            
-            $this->conn->rollBack();
-            return false;
-        } catch (Exception $e) {
-            $this->conn->rollBack();
-            return false;
-        }
-    }
-
-    // Verificar stock disponible
-    public function verificarStock($producto_id, $cantidad_requerida) {
-        $query = "SELECT stock FROM productos WHERE id = :producto_id AND activo = 1";
+    // Verificar stock de producto
+    public function verificarStock($producto_id, $cantidad) {
+        $query = "SELECT stock FROM productos WHERE id = :producto_id";
         
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(':producto_id', $producto_id);
         $stmt->execute();
         
-        $resultado = $stmt->fetch(PDO::FETCH_ASSOC);
-        
-        if ($resultado) {
+        if ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $stock_actual = intval($row['stock']);
+            $stock_resultante = $stock_actual - $cantidad;
+            
             return [
-                'disponible' => $resultado['stock'] >= $cantidad_requerida,
-                'stock_actual' => $resultado['stock'],
-                'stock_resultante' => $resultado['stock'] - $cantidad_requerida
+                'stock_actual' => $stock_actual,
+                'stock_resultante' => $stock_resultante,
+                'disponible' => $stock_resultante >= 0
             ];
         }
         
-        return false;
+        return null;
     }
 
-    // Obtener ventas por rango de fechas
-    public function obtenerPorFechas($fecha_inicio, $fecha_fin) {
-        $query = "SELECT v.id, v.cliente_id, v.usuario_id, v.fecha_venta, v.total, 
-                         v.tipo_pago, v.notas, v.anulada,
-                         c.nombre_banda as cliente_nombre, c.contacto_nombre as cliente_apellido,
-                         u.nombre as usuario_nombre
-                  FROM " . $this->table_name . " v
-                  LEFT JOIN clientes c ON v.cliente_id = c.id
-                  LEFT JOIN usuarios u ON v.usuario_id = u.id
-                  WHERE DATE(v.fecha_venta) BETWEEN :fecha_inicio AND :fecha_fin
-                  ORDER BY v.fecha_venta DESC";
+    // Actualizar stock de producto
+    public function actualizarStockProducto($producto_id, $cantidad) {
+        $query = "UPDATE productos SET stock = stock - :cantidad WHERE id = :producto_id";
         
         $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(':fecha_inicio', $fecha_inicio);
-        $stmt->bindParam(':fecha_fin', $fecha_fin);
-        $stmt->execute();
+        $stmt->bindParam(':producto_id', $producto_id);
+        $stmt->bindParam(':cantidad', $cantidad);
         
-        return $stmt;
+        return $stmt->execute();
     }
+
 }
 ?>

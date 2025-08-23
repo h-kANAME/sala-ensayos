@@ -15,6 +15,13 @@ class Database {
                 $this->password
             );
             $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            
+            // Configurar zona horaria de Argentina (UTC-3)
+            $this->conn->exec("SET time_zone = '-03:00'");
+            
+            // También configurar la zona horaria de PHP
+            date_default_timezone_set('America/Argentina/Buenos_Aires');
+            
         } catch(PDOException $exception) {
             echo "Error de conexión: " . $exception->getMessage();
         }
