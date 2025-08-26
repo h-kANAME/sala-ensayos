@@ -1,0 +1,975 @@
+﻿{
+    "Type":  "Directory",
+    "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos",
+    "LastWriteTime":  "2025-08-26 16:58:15",
+    "Name":  "sala-ensayos",
+    "Children":  [
+                     {
+                         "Type":  "Directory",
+                         "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\backend",
+                         "LastWriteTime":  "2025-08-22 16:19:08",
+                         "Name":  "backend",
+                         "Children":  [
+                                          {
+                                              "Type":  "Directory",
+                                              "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\backend\\auth",
+                                              "LastWriteTime":  "2025-08-20 17:47:39",
+                                              "Name":  "auth",
+                                              "Children":  [
+                                                               {
+                                                                   "Type":  "File",
+                                                                   "Size":  3045,
+                                                                   "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\backend\\auth\\login.php",
+                                                                   "LastWriteTime":  "2025-08-20 17:47:39",
+                                                                   "Name":  "login.php",
+                                                                   "Extension":  ".php"
+                                                               },
+                                                               {
+                                                                   "Type":  "File",
+                                                                   "Size":  2463,
+                                                                   "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\backend\\auth\\verify.php",
+                                                                   "LastWriteTime":  "2025-08-19 21:59:21",
+                                                                   "Name":  "verify.php",
+                                                                   "Extension":  ".php"
+                                                               }
+                                                           ]
+                                          },
+                                          {
+                                              "Type":  "Directory",
+                                              "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\backend\\config",
+                                              "LastWriteTime":  "2025-08-26 14:07:09",
+                                              "Name":  "config",
+                                              "Children":  [
+                                                               {
+                                                                   "Type":  "File",
+                                                                   "Size":  159,
+                                                                   "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\backend\\config\\cors.php",
+                                                                   "LastWriteTime":  "2025-08-19 21:59:18",
+                                                                   "Name":  "cors.php",
+                                                                   "Extension":  ".php"
+                                                               },
+                                                               {
+                                                                   "Type":  "File",
+                                                                   "Size":  1311,
+                                                                   "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\backend\\config\\database.php",
+                                                                   "LastWriteTime":  "2025-08-25 22:38:00",
+                                                                   "Name":  "database.php",
+                                                                   "Extension":  ".php"
+                                                               },
+                                                               {
+                                                                   "Type":  "File",
+                                                                   "Size":  6333,
+                                                                   "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\backend\\config\\environment.php",
+                                                                   "LastWriteTime":  "2025-08-26 14:07:09",
+                                                                   "Name":  "environment.php",
+                                                                   "Extension":  ".php"
+                                                               }
+                                                           ]
+                                          },
+                                          {
+                                              "Type":  "Directory",
+                                              "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\backend\\controllers",
+                                              "LastWriteTime":  "2025-08-22 18:09:02",
+                                              "Name":  "controllers",
+                                              "Children":  [
+                                                               {
+                                                                   "Type":  "File",
+                                                                   "Size":  3338,
+                                                                   "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\backend\\controllers\\CheckinController.php",
+                                                                   "LastWriteTime":  "2025-08-20 22:22:46",
+                                                                   "Name":  "CheckinController.php",
+                                                                   "Extension":  ".php"
+                                                               },
+                                                               {
+                                                                   "Type":  "File",
+                                                                   "Size":  5475,
+                                                                   "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\backend\\controllers\\ClienteController.php",
+                                                                   "LastWriteTime":  "2025-08-21 21:17:14",
+                                                                   "Name":  "ClienteController.php",
+                                                                   "Extension":  ".php"
+                                                               },
+                                                               {
+                                                                   "Type":  "File",
+                                                                   "Size":  10577,
+                                                                   "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\backend\\controllers\\ProductoController.php",
+                                                                   "LastWriteTime":  "2025-08-21 22:06:18",
+                                                                   "Name":  "ProductoController.php",
+                                                                   "Extension":  ".php"
+                                                               },
+                                                               {
+                                                                   "Type":  "File",
+                                                                   "Size":  13720,
+                                                                   "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\backend\\controllers\\ReservaController.php",
+                                                                   "LastWriteTime":  "2025-08-21 22:39:45",
+                                                                   "Name":  "ReservaController.php",
+                                                                   "Extension":  ".php"
+                                                               },
+                                                               {
+                                                                   "Type":  "File",
+                                                                   "Size":  1863,
+                                                                   "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\backend\\controllers\\SalaController.php",
+                                                                   "LastWriteTime":  "2025-08-21 21:27:17",
+                                                                   "Name":  "SalaController.php",
+                                                                   "Extension":  ".php"
+                                                               },
+                                                               {
+                                                                   "Type":  "File",
+                                                                   "Size":  17125,
+                                                                   "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\backend\\controllers\\VentaController.php",
+                                                                   "LastWriteTime":  "2025-08-22 18:09:02",
+                                                                   "Name":  "VentaController.php",
+                                                                   "Extension":  ".php"
+                                                               }
+                                                           ]
+                                          },
+                                          {
+                                              "LastWriteTime":  "2025-08-19 15:52:07",
+                                              "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\backend\\middleware",
+                                              "Name":  "middleware",
+                                              "Type":  "Directory",
+                                              "Children":  [
+
+                                                           ]
+                                          },
+                                          {
+                                              "Type":  "Directory",
+                                              "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\backend\\models",
+                                              "LastWriteTime":  "2025-08-23 20:07:03",
+                                              "Name":  "models",
+                                              "Children":  [
+                                                               {
+                                                                   "Type":  "File",
+                                                                   "Size":  4697,
+                                                                   "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\backend\\models\\Cliente.php",
+                                                                   "LastWriteTime":  "2025-08-19 17:23:28",
+                                                                   "Name":  "Cliente.php",
+                                                                   "Extension":  ".php"
+                                                               },
+                                                               {
+                                                                   "Type":  "File",
+                                                                   "Size":  6040,
+                                                                   "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\backend\\models\\Producto.php",
+                                                                   "LastWriteTime":  "2025-08-21 22:21:39",
+                                                                   "Name":  "Producto.php",
+                                                                   "Extension":  ".php"
+                                                               },
+                                                               {
+                                                                   "Type":  "File",
+                                                                   "Size":  17753,
+                                                                   "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\backend\\models\\Reserva.php",
+                                                                   "LastWriteTime":  "2025-08-23 20:07:03",
+                                                                   "Name":  "Reserva.php",
+                                                                   "Extension":  ".php"
+                                                               },
+                                                               {
+                                                                   "Type":  "File",
+                                                                   "Size":  978,
+                                                                   "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\backend\\models\\Sala.php",
+                                                                   "LastWriteTime":  "2025-08-19 17:24:57",
+                                                                   "Name":  "Sala.php",
+                                                                   "Extension":  ".php"
+                                                               },
+                                                               {
+                                                                   "Type":  "File",
+                                                                   "Size":  9655,
+                                                                   "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\backend\\models\\Venta.php",
+                                                                   "LastWriteTime":  "2025-08-22 18:07:05",
+                                                                   "Name":  "Venta.php",
+                                                                   "Extension":  ".php"
+                                                               }
+                                                           ]
+                                          },
+                                          {
+                                              "Type":  "Directory",
+                                              "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\backend\\routes",
+                                              "LastWriteTime":  "2025-08-21 22:06:24",
+                                              "Name":  "routes",
+                                              "Children":  [
+                                                               {
+                                                                   "Type":  "File",
+                                                                   "Size":  319,
+                                                                   "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\backend\\routes\\clientes.php",
+                                                                   "LastWriteTime":  "2025-08-21 20:41:19",
+                                                                   "Name":  "clientes.php",
+                                                                   "Extension":  ".php"
+                                                               },
+                                                               {
+                                                                   "Type":  "File",
+                                                                   "Size":  115,
+                                                                   "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\backend\\routes\\productos.php",
+                                                                   "LastWriteTime":  "2025-08-21 22:06:24",
+                                                                   "Name":  "productos.php",
+                                                                   "Extension":  ".php"
+                                                               },
+                                                               {
+                                                                   "Type":  "File",
+                                                                   "Size":  63,
+                                                                   "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\backend\\routes\\reservas.php",
+                                                                   "LastWriteTime":  "2025-08-19 17:13:19",
+                                                                   "Name":  "reservas.php",
+                                                                   "Extension":  ".php"
+                                                               }
+                                                           ]
+                                          }
+                                      ]
+                     },
+                     {
+                         "Type":  "Directory",
+                         "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\database",
+                         "LastWriteTime":  "2025-08-19 16:19:15",
+                         "Name":  "database",
+                         "Children":  [
+                                          {
+                                              "Type":  "File",
+                                              "Size":  4968,
+                                              "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\database\\schema.sql",
+                                              "LastWriteTime":  "2025-08-19 16:25:44",
+                                              "Name":  "schema.sql",
+                                              "Extension":  ".sql"
+                                          }
+                                      ]
+                     },
+                     {
+                         "LastWriteTime":  "2025-08-19 15:52:07",
+                         "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\docs",
+                         "Name":  "docs",
+                         "Type":  "Directory",
+                         "Children":  [
+
+                                      ]
+                     },
+                     {
+                         "Type":  "Directory",
+                         "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\public",
+                         "LastWriteTime":  "2025-08-25 22:55:19",
+                         "Name":  "public",
+                         "Children":  [
+                                          {
+                                              "Type":  "Directory",
+                                              "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\public\\api",
+                                              "LastWriteTime":  "2025-08-26 10:12:26",
+                                              "Name":  "api",
+                                              "Children":  [
+                                                               {
+                                                                   "Type":  "File",
+                                                                   "Size":  13329,
+                                                                   "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\public\\api\\index.php",
+                                                                   "LastWriteTime":  "2025-08-26 10:12:26",
+                                                                   "Name":  "index.php",
+                                                                   "Extension":  ".php"
+                                                               }
+                                                           ]
+                                          },
+                                          {
+                                              "Type":  "File",
+                                              "Size":  1764,
+                                              "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\public\\index.html",
+                                              "LastWriteTime":  "2025-08-21 20:31:28",
+                                              "Name":  "index.html",
+                                              "Extension":  ".html"
+                                          },
+                                          {
+                                              "Type":  "File",
+                                              "Size":  212,
+                                              "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\public\\manifest.json",
+                                              "LastWriteTime":  "2025-08-21 21:13:36",
+                                              "Name":  "manifest.json",
+                                              "Extension":  ".json"
+                                          },
+                                          {
+                                              "Type":  "File",
+                                              "Size":  67,
+                                              "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\public\\robots.txt",
+                                              "LastWriteTime":  "2025-08-19 15:48:49",
+                                              "Name":  "robots.txt",
+                                              "Extension":  ".txt"
+                                          }
+                                      ]
+                     },
+                     {
+                         "LastWriteTime":  "2025-08-21 13:21:15",
+                         "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\reportes-estructura",
+                         "Name":  "reportes-estructura",
+                         "Type":  "Directory",
+                         "Children":  [
+
+                                      ]
+                     },
+                     {
+                         "Type":  "Directory",
+                         "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\src",
+                         "LastWriteTime":  "2025-08-25 23:23:26",
+                         "Name":  "src",
+                         "Children":  [
+                                          {
+                                              "Type":  "Directory",
+                                              "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\src\\assets",
+                                              "LastWriteTime":  "2025-08-19 15:52:07",
+                                              "Name":  "assets",
+                                              "Children":  [
+                                                               {
+                                                                   "LastWriteTime":  "2025-08-19 15:52:07",
+                                                                   "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\src\\assets\\icons",
+                                                                   "Name":  "icons",
+                                                                   "Type":  "Directory",
+                                                                   "Children":  [
+
+                                                                                ]
+                                                               },
+                                                               {
+                                                                   "LastWriteTime":  "2025-08-19 15:52:07",
+                                                                   "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\src\\assets\\images",
+                                                                   "Name":  "images",
+                                                                   "Type":  "Directory",
+                                                                   "Children":  [
+
+                                                                                ]
+                                                               }
+                                                           ]
+                                          },
+                                          {
+                                              "Type":  "Directory",
+                                              "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\src\\components",
+                                              "LastWriteTime":  "2025-08-19 15:52:07",
+                                              "Name":  "components",
+                                              "Children":  [
+                                                               {
+                                                                   "Type":  "Directory",
+                                                                   "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\src\\components\\auth",
+                                                                   "LastWriteTime":  "2025-08-19 16:02:13",
+                                                                   "Name":  "auth",
+                                                                   "Children":  [
+                                                                                    {
+                                                                                        "Type":  "File",
+                                                                                        "Size":  2262,
+                                                                                        "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\src\\components\\auth\\Login.css",
+                                                                                        "LastWriteTime":  "2025-08-19 16:54:54",
+                                                                                        "Name":  "Login.css",
+                                                                                        "Extension":  ".css"
+                                                                                    },
+                                                                                    {
+                                                                                        "Type":  "File",
+                                                                                        "Size":  3034,
+                                                                                        "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\src\\components\\auth\\Login.js",
+                                                                                        "LastWriteTime":  "2025-08-19 16:57:45",
+                                                                                        "Name":  "Login.js",
+                                                                                        "Extension":  ".js"
+                                                                                    }
+                                                                                ]
+                                                               },
+                                                               {
+                                                                   "Type":  "Directory",
+                                                                   "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\src\\components\\clientes",
+                                                                   "LastWriteTime":  "2025-08-21 21:42:35",
+                                                                   "Name":  "clientes",
+                                                                   "Children":  [
+                                                                                    {
+                                                                                        "Type":  "File",
+                                                                                        "Size":  2298,
+                                                                                        "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\src\\components\\clientes\\FormularioCliente.css",
+                                                                                        "LastWriteTime":  "2025-08-21 21:04:51",
+                                                                                        "Name":  "FormularioCliente.css",
+                                                                                        "Extension":  ".css"
+                                                                                    },
+                                                                                    {
+                                                                                        "Type":  "File",
+                                                                                        "Size":  4988,
+                                                                                        "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\src\\components\\clientes\\FormularioCliente.js",
+                                                                                        "LastWriteTime":  "2025-08-21 21:16:10",
+                                                                                        "Name":  "FormularioCliente.js",
+                                                                                        "Extension":  ".js"
+                                                                                    },
+                                                                                    {
+                                                                                        "Type":  "File",
+                                                                                        "Size":  1982,
+                                                                                        "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\src\\components\\clientes\\ListaClientes.css",
+                                                                                        "LastWriteTime":  "2025-08-21 21:17:28",
+                                                                                        "Name":  "ListaClientes.css",
+                                                                                        "Extension":  ".css"
+                                                                                    },
+                                                                                    {
+                                                                                        "Type":  "File",
+                                                                                        "Size":  4689,
+                                                                                        "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\src\\components\\clientes\\ListaClientes.js",
+                                                                                        "LastWriteTime":  "2025-08-21 21:42:35",
+                                                                                        "Name":  "ListaClientes.js",
+                                                                                        "Extension":  ".js"
+                                                                                    }
+                                                                                ]
+                                                               },
+                                                               {
+                                                                   "Type":  "Directory",
+                                                                   "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\src\\components\\common",
+                                                                   "LastWriteTime":  "2025-08-22 16:24:48",
+                                                                   "Name":  "common",
+                                                                   "Children":  [
+                                                                                    {
+                                                                                        "Type":  "File",
+                                                                                        "Size":  1637,
+                                                                                        "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\src\\components\\common\\Layout.css",
+                                                                                        "LastWriteTime":  "2025-08-19 16:44:30",
+                                                                                        "Name":  "Layout.css",
+                                                                                        "Extension":  ".css"
+                                                                                    },
+                                                                                    {
+                                                                                        "Type":  "File",
+                                                                                        "Size":  2015,
+                                                                                        "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\src\\components\\common\\Layout.js",
+                                                                                        "LastWriteTime":  "2025-08-22 16:24:48",
+                                                                                        "Name":  "Layout.js",
+                                                                                        "Extension":  ".js"
+                                                                                    },
+                                                                                    {
+                                                                                        "Type":  "File",
+                                                                                        "Size":  572,
+                                                                                        "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\src\\components\\common\\Loading.css",
+                                                                                        "LastWriteTime":  "2025-08-19 16:55:43",
+                                                                                        "Name":  "Loading.css",
+                                                                                        "Extension":  ".css"
+                                                                                    },
+                                                                                    {
+                                                                                        "Type":  "File",
+                                                                                        "Size":  277,
+                                                                                        "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\src\\components\\common\\Loading.js",
+                                                                                        "LastWriteTime":  "2025-08-19 16:55:30",
+                                                                                        "Name":  "Loading.js",
+                                                                                        "Extension":  ".js"
+                                                                                    }
+                                                                                ]
+                                                               },
+                                                               {
+                                                                   "Type":  "Directory",
+                                                                   "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\src\\components\\productos",
+                                                                   "LastWriteTime":  "2025-08-21 22:09:58",
+                                                                   "Name":  "productos",
+                                                                   "Children":  [
+                                                                                    {
+                                                                                        "Type":  "File",
+                                                                                        "Size":  3996,
+                                                                                        "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\src\\components\\productos\\FormularioProducto.css",
+                                                                                        "LastWriteTime":  "2025-08-21 22:08:56",
+                                                                                        "Name":  "FormularioProducto.css",
+                                                                                        "Extension":  ".css"
+                                                                                    },
+                                                                                    {
+                                                                                        "Type":  "File",
+                                                                                        "Size":  9691,
+                                                                                        "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\src\\components\\productos\\FormularioProducto.js",
+                                                                                        "LastWriteTime":  "2025-08-21 22:08:37",
+                                                                                        "Name":  "FormularioProducto.js",
+                                                                                        "Extension":  ".js"
+                                                                                    },
+                                                                                    {
+                                                                                        "Type":  "File",
+                                                                                        "Size":  6475,
+                                                                                        "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\src\\components\\productos\\GestionStock.css",
+                                                                                        "LastWriteTime":  "2025-08-21 22:09:58",
+                                                                                        "Name":  "GestionStock.css",
+                                                                                        "Extension":  ".css"
+                                                                                    },
+                                                                                    {
+                                                                                        "Type":  "File",
+                                                                                        "Size":  10533,
+                                                                                        "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\src\\components\\productos\\GestionStock.js",
+                                                                                        "LastWriteTime":  "2025-08-21 22:09:26",
+                                                                                        "Name":  "GestionStock.js",
+                                                                                        "Extension":  ".js"
+                                                                                    },
+                                                                                    {
+                                                                                        "Type":  "File",
+                                                                                        "Size":  3852,
+                                                                                        "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\src\\components\\productos\\ListaProductos.css",
+                                                                                        "LastWriteTime":  "2025-08-21 22:08:12",
+                                                                                        "Name":  "ListaProductos.css",
+                                                                                        "Extension":  ".css"
+                                                                                    },
+                                                                                    {
+                                                                                        "Type":  "File",
+                                                                                        "Size":  6445,
+                                                                                        "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\src\\components\\productos\\ListaProductos.js",
+                                                                                        "LastWriteTime":  "2025-08-21 22:07:51",
+                                                                                        "Name":  "ListaProductos.js",
+                                                                                        "Extension":  ".js"
+                                                                                    }
+                                                                                ]
+                                                               },
+                                                               {
+                                                                   "LastWriteTime":  "2025-08-19 15:52:07",
+                                                                   "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\src\\components\\reportes",
+                                                                   "Name":  "reportes",
+                                                                   "Type":  "Directory",
+                                                                   "Children":  [
+
+                                                                                ]
+                                                               },
+                                                               {
+                                                                   "Type":  "Directory",
+                                                                   "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\src\\components\\reservas",
+                                                                   "LastWriteTime":  "2025-08-21 23:09:52",
+                                                                   "Name":  "reservas",
+                                                                   "Children":  [
+                                                                                    {
+                                                                                        "Type":  "File",
+                                                                                        "Size":  6740,
+                                                                                        "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\src\\components\\reservas\\CalendarioReservas.css",
+                                                                                        "LastWriteTime":  "2025-08-21 22:36:08",
+                                                                                        "Name":  "CalendarioReservas.css",
+                                                                                        "Extension":  ".css"
+                                                                                    },
+                                                                                    {
+                                                                                        "Type":  "File",
+                                                                                        "Size":  17218,
+                                                                                        "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\src\\components\\reservas\\CalendarioReservas.js",
+                                                                                        "LastWriteTime":  "2025-08-21 23:09:52",
+                                                                                        "Name":  "CalendarioReservas.js",
+                                                                                        "Extension":  ".js"
+                                                                                    },
+                                                                                    {
+                                                                                        "Type":  "File",
+                                                                                        "Size":  2361,
+                                                                                        "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\src\\components\\reservas\\CheckInButton.css",
+                                                                                        "LastWriteTime":  "2025-08-21 22:36:28",
+                                                                                        "Name":  "CheckInButton.css",
+                                                                                        "Extension":  ".css"
+                                                                                    },
+                                                                                    {
+                                                                                        "Type":  "File",
+                                                                                        "Size":  4945,
+                                                                                        "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\src\\components\\reservas\\CheckInButton.js",
+                                                                                        "LastWriteTime":  "2025-08-21 22:37:00",
+                                                                                        "Name":  "CheckInButton.js",
+                                                                                        "Extension":  ".js"
+                                                                                    },
+                                                                                    {
+                                                                                        "Type":  "File",
+                                                                                        "Size":  4289,
+                                                                                        "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\src\\components\\reservas\\FormularioReserva.css",
+                                                                                        "LastWriteTime":  "2025-08-21 23:04:04",
+                                                                                        "Name":  "FormularioReserva.css",
+                                                                                        "Extension":  ".css"
+                                                                                    },
+                                                                                    {
+                                                                                        "Type":  "File",
+                                                                                        "Size":  15680,
+                                                                                        "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\src\\components\\reservas\\FormularioReserva.js",
+                                                                                        "LastWriteTime":  "2025-08-21 23:03:54",
+                                                                                        "Name":  "FormularioReserva.js",
+                                                                                        "Extension":  ".js"
+                                                                                    }
+                                                                                ]
+                                                               },
+                                                               {
+                                                                   "Type":  "Directory",
+                                                                   "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\src\\components\\ventas",
+                                                                   "LastWriteTime":  "2025-08-22 18:15:42",
+                                                                   "Name":  "ventas",
+                                                                   "Children":  [
+                                                                                    {
+                                                                                        "Type":  "File",
+                                                                                        "Size":  1711,
+                                                                                        "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\src\\components\\ventas\\FiltrosFechas.css",
+                                                                                        "LastWriteTime":  "2025-08-22 18:00:53",
+                                                                                        "Name":  "FiltrosFechas.css",
+                                                                                        "Extension":  ".css"
+                                                                                    },
+                                                                                    {
+                                                                                        "Type":  "File",
+                                                                                        "Size":  2509,
+                                                                                        "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\src\\components\\ventas\\FiltrosFechas.js",
+                                                                                        "LastWriteTime":  "2025-08-22 18:15:35",
+                                                                                        "Name":  "FiltrosFechas.js",
+                                                                                        "Extension":  ".js"
+                                                                                    },
+                                                                                    {
+                                                                                        "Type":  "File",
+                                                                                        "Size":  8870,
+                                                                                        "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\src\\components\\ventas\\FormularioVenta.css",
+                                                                                        "LastWriteTime":  "2025-08-22 16:23:27",
+                                                                                        "Name":  "FormularioVenta.css",
+                                                                                        "Extension":  ".css"
+                                                                                    },
+                                                                                    {
+                                                                                        "Type":  "File",
+                                                                                        "Size":  22989,
+                                                                                        "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\src\\components\\ventas\\FormularioVenta.js",
+                                                                                        "LastWriteTime":  "2025-08-23 20:20:53",
+                                                                                        "Name":  "FormularioVenta.js",
+                                                                                        "Extension":  ".js"
+                                                                                    },
+                                                                                    {
+                                                                                        "Type":  "File",
+                                                                                        "Size":  6239,
+                                                                                        "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\src\\components\\ventas\\ListaVentas.css",
+                                                                                        "LastWriteTime":  "2025-08-22 16:21:44",
+                                                                                        "Name":  "ListaVentas.css",
+                                                                                        "Extension":  ".css"
+                                                                                    },
+                                                                                    {
+                                                                                        "Type":  "File",
+                                                                                        "Size":  15950,
+                                                                                        "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\src\\components\\ventas\\ListaVentas.js",
+                                                                                        "LastWriteTime":  "2025-08-22 18:15:42",
+                                                                                        "Name":  "ListaVentas.js",
+                                                                                        "Extension":  ".js"
+                                                                                    },
+                                                                                    {
+                                                                                        "Type":  "File",
+                                                                                        "Size":  1510,
+                                                                                        "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\src\\components\\ventas\\Paginador.css",
+                                                                                        "LastWriteTime":  "2025-08-22 18:02:15",
+                                                                                        "Name":  "Paginador.css",
+                                                                                        "Extension":  ".css"
+                                                                                    },
+                                                                                    {
+                                                                                        "Type":  "File",
+                                                                                        "Size":  3271,
+                                                                                        "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\src\\components\\ventas\\Paginador.js",
+                                                                                        "LastWriteTime":  "2025-08-22 18:02:02",
+                                                                                        "Name":  "Paginador.js",
+                                                                                        "Extension":  ".js"
+                                                                                    }
+                                                                                ]
+                                                               }
+                                                           ]
+                                          },
+                                          {
+                                              "Type":  "Directory",
+                                              "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\src\\context",
+                                              "LastWriteTime":  "2025-08-21 21:51:47",
+                                              "Name":  "context",
+                                              "Children":  [
+                                                               {
+                                                                   "Type":  "File",
+                                                                   "Size":  4100,
+                                                                   "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\src\\context\\AuthContext.js",
+                                                                   "LastWriteTime":  "2025-08-21 21:51:47",
+                                                                   "Name":  "AuthContext.js",
+                                                                   "Extension":  ".js"
+                                                               }
+                                                           ]
+                                          },
+                                          {
+                                              "Type":  "Directory",
+                                              "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\src\\pages",
+                                              "LastWriteTime":  "2025-08-22 16:24:10",
+                                              "Name":  "pages",
+                                              "Children":  [
+                                                               {
+                                                                   "Type":  "File",
+                                                                   "Size":  316,
+                                                                   "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\src\\pages\\ClienteEditar.js",
+                                                                   "LastWriteTime":  "2025-08-21 21:08:17",
+                                                                   "Name":  "ClienteEditar.js",
+                                                                   "Extension":  ".js"
+                                                               },
+                                                               {
+                                                                   "Type":  "File",
+                                                                   "Size":  314,
+                                                                   "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\src\\pages\\ClienteNuevo.js",
+                                                                   "LastWriteTime":  "2025-08-21 21:08:09",
+                                                                   "Name":  "ClienteNuevo.js",
+                                                                   "Extension":  ".js"
+                                                               },
+                                                               {
+                                                                   "Type":  "File",
+                                                                   "Size":  294,
+                                                                   "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\src\\pages\\Clientes.js",
+                                                                   "LastWriteTime":  "2025-08-21 21:03:53",
+                                                                   "Name":  "Clientes.js",
+                                                                   "Extension":  ".js"
+                                                               },
+                                                               {
+                                                                   "Type":  "File",
+                                                                   "Size":  2467,
+                                                                   "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\src\\pages\\Dashboard.css",
+                                                                   "LastWriteTime":  "2025-08-19 17:16:11",
+                                                                   "Name":  "Dashboard.css",
+                                                                   "Extension":  ".css"
+                                                               },
+                                                               {
+                                                                   "Type":  "File",
+                                                                   "Size":  2513,
+                                                                   "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\src\\pages\\Dashboard.js",
+                                                                   "LastWriteTime":  "2025-08-21 21:46:46",
+                                                                   "Name":  "Dashboard.js",
+                                                                   "Extension":  ".js"
+                                                               },
+                                                               {
+                                                                   "Type":  "File",
+                                                                   "Size":  494,
+                                                                   "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\src\\pages\\ProductoEditar.js",
+                                                                   "LastWriteTime":  "2025-08-21 22:07:31",
+                                                                   "Name":  "ProductoEditar.js",
+                                                                   "Extension":  ".js"
+                                                               },
+                                                               {
+                                                                   "Type":  "File",
+                                                                   "Size":  390,
+                                                                   "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\src\\pages\\ProductoNuevo.js",
+                                                                   "LastWriteTime":  "2025-08-21 22:07:25",
+                                                                   "Name":  "ProductoNuevo.js",
+                                                                   "Extension":  ".js"
+                                                               },
+                                                               {
+                                                                   "Type":  "File",
+                                                                   "Size":  1251,
+                                                                   "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\src\\pages\\Productos.css",
+                                                                   "LastWriteTime":  "2025-08-21 22:07:09",
+                                                                   "Name":  "Productos.css",
+                                                                   "Extension":  ".css"
+                                                               },
+                                                               {
+                                                                   "Type":  "File",
+                                                                   "Size":  1771,
+                                                                   "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\src\\pages\\Productos.js",
+                                                                   "LastWriteTime":  "2025-08-21 22:06:54",
+                                                                   "Name":  "Productos.js",
+                                                                   "Extension":  ".js"
+                                                               },
+                                                               {
+                                                                   "Type":  "File",
+                                                                   "Size":  4854,
+                                                                   "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\src\\pages\\VentaEditar.js",
+                                                                   "LastWriteTime":  "2025-08-22 16:24:10",
+                                                                   "Name":  "VentaEditar.js",
+                                                                   "Extension":  ".js"
+                                                               },
+                                                               {
+                                                                   "Type":  "File",
+                                                                   "Size":  1033,
+                                                                   "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\src\\pages\\VentaNueva.js",
+                                                                   "LastWriteTime":  "2025-08-22 16:23:50",
+                                                                   "Name":  "VentaNueva.js",
+                                                                   "Extension":  ".js"
+                                                               },
+                                                               {
+                                                                   "Type":  "File",
+                                                                   "Size":  436,
+                                                                   "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\src\\pages\\Ventas.js",
+                                                                   "LastWriteTime":  "2025-08-22 16:23:42",
+                                                                   "Name":  "Ventas.js",
+                                                                   "Extension":  ".js"
+                                                               }
+                                                           ]
+                                          },
+                                          {
+                                              "Type":  "Directory",
+                                              "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\src\\services",
+                                              "LastWriteTime":  "2025-08-25 22:56:59",
+                                              "Name":  "services",
+                                              "Children":  [
+                                                               {
+                                                                   "Type":  "File",
+                                                                   "Size":  3946,
+                                                                   "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\src\\services\\api.js",
+                                                                   "LastWriteTime":  "2025-08-25 22:56:59",
+                                                                   "Name":  "api.js",
+                                                                   "Extension":  ".js"
+                                                               },
+                                                               {
+                                                                   "Type":  "File",
+                                                                   "Size":  855,
+                                                                   "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\src\\services\\authService.js",
+                                                                   "LastWriteTime":  "2025-08-25 22:52:51",
+                                                                   "Name":  "authService.js",
+                                                                   "Extension":  ".js"
+                                                               },
+                                                               {
+                                                                   "Type":  "File",
+                                                                   "Size":  2105,
+                                                                   "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\src\\services\\clientesService.js",
+                                                                   "LastWriteTime":  "2025-08-21 21:12:36",
+                                                                   "Name":  "clientesService.js",
+                                                                   "Extension":  ".js"
+                                                               },
+                                                               {
+                                                                   "Type":  "File",
+                                                                   "Size":  3378,
+                                                                   "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\src\\services\\productosService.js",
+                                                                   "LastWriteTime":  "2025-08-21 22:06:44",
+                                                                   "Name":  "productosService.js",
+                                                                   "Extension":  ".js"
+                                                               },
+                                                               {
+                                                                   "Type":  "File",
+                                                                   "Size":  3571,
+                                                                   "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\src\\services\\reservasService.js",
+                                                                   "LastWriteTime":  "2025-08-21 21:29:22",
+                                                                   "Name":  "reservasService.js",
+                                                                   "Extension":  ".js"
+                                                               },
+                                                               {
+                                                                   "Type":  "File",
+                                                                   "Size":  1098,
+                                                                   "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\src\\services\\salasService.js",
+                                                                   "LastWriteTime":  "2025-08-21 21:26:55",
+                                                                   "Name":  "salasService.js",
+                                                                   "Extension":  ".js"
+                                                               },
+                                                               {
+                                                                   "Type":  "File",
+                                                                   "Size":  4890,
+                                                                   "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\src\\services\\ventasService.js",
+                                                                   "LastWriteTime":  "2025-08-22 18:06:37",
+                                                                   "Name":  "ventasService.js",
+                                                                   "Extension":  ".js"
+                                                               }
+                                                           ]
+                                          },
+                                          {
+                                              "LastWriteTime":  "2025-08-19 15:52:07",
+                                              "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\src\\utils",
+                                              "Name":  "utils",
+                                              "Type":  "Directory",
+                                              "Children":  [
+
+                                                           ]
+                                          },
+                                          {
+                                              "Type":  "File",
+                                              "Size":  1133,
+                                              "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\src\\App.css",
+                                              "LastWriteTime":  "2025-08-19 16:46:18",
+                                              "Name":  "App.css",
+                                              "Extension":  ".css"
+                                          },
+                                          {
+                                              "Type":  "File",
+                                              "Size":  4205,
+                                              "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\src\\App.js",
+                                              "LastWriteTime":  "2025-08-25 23:23:26",
+                                              "Name":  "App.js",
+                                              "Extension":  ".js"
+                                          },
+                                          {
+                                              "Type":  "File",
+                                              "Size":  246,
+                                              "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\src\\App.test.js",
+                                              "LastWriteTime":  "2025-08-19 15:48:48",
+                                              "Name":  "App.test.js",
+                                              "Extension":  ".js"
+                                          },
+                                          {
+                                              "Type":  "File",
+                                              "Size":  366,
+                                              "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\src\\index.css",
+                                              "LastWriteTime":  "2025-08-19 15:48:47",
+                                              "Name":  "index.css",
+                                              "Extension":  ".css"
+                                          },
+                                          {
+                                              "Type":  "File",
+                                              "Size":  322,
+                                              "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\src\\index.js",
+                                              "LastWriteTime":  "2025-08-19 16:27:15",
+                                              "Name":  "index.js",
+                                              "Extension":  ".js"
+                                          },
+                                          {
+                                              "Type":  "File",
+                                              "Size":  2632,
+                                              "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\src\\logo.svg",
+                                              "LastWriteTime":  "2025-08-19 15:48:49",
+                                              "Name":  "logo.svg",
+                                              "Extension":  ".svg"
+                                          },
+                                          {
+                                              "Type":  "File",
+                                              "Size":  362,
+                                              "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\src\\reportWebVitals.js",
+                                              "LastWriteTime":  "2025-08-19 15:48:48",
+                                              "Name":  "reportWebVitals.js",
+                                              "Extension":  ".js"
+                                          },
+                                          {
+                                              "Type":  "File",
+                                              "Size":  241,
+                                              "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\src\\setupTests.js",
+                                              "LastWriteTime":  "2025-08-19 15:48:49",
+                                              "Name":  "setupTests.js",
+                                              "Extension":  ".js"
+                                          }
+                                      ]
+                     },
+                     {
+                         "Type":  "File",
+                         "Size":  2499,
+                         "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\deploy.md",
+                         "LastWriteTime":  "2025-08-26 09:48:45",
+                         "Name":  "deploy.md",
+                         "Extension":  ".md"
+                     },
+                     {
+                         "Type":  "File",
+                         "Size":  4699,
+                         "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\DEPLOYMENT.md",
+                         "LastWriteTime":  "2025-08-25 22:39:55",
+                         "Name":  "DEPLOYMENT.md",
+                         "Extension":  ".md"
+                     },
+                     {
+                         "Type":  "File",
+                         "Size":  1175,
+                         "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\docker-compose.yml",
+                         "LastWriteTime":  "2025-08-19 22:09:58",
+                         "Name":  "docker-compose.yml",
+                         "Extension":  ".yml"
+                     },
+                     {
+                         "Type":  "File",
+                         "Size":  952,
+                         "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\Dockerfile",
+                         "LastWriteTime":  "2025-08-19 22:09:43",
+                         "Name":  "Dockerfile",
+                         "Extension":  ""
+                     },
+                     {
+                         "Type":  "File",
+                         "Size":  15872,
+                         "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\generar-estructura-con-datos.ps1",
+                         "LastWriteTime":  "2025-08-21 01:26:02",
+                         "Name":  "generar-estructura-con-datos.ps1",
+                         "Extension":  ".ps1"
+                     },
+                     {
+                         "Type":  "File",
+                         "Size":  5753,
+                         "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\generar-estructura.ps1",
+                         "LastWriteTime":  "2025-08-19 16:15:48",
+                         "Name":  "generar-estructura.ps1",
+                         "Extension":  ".ps1"
+                     },
+                     {
+                         "Type":  "File",
+                         "Size":  35823,
+                         "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\LICENSE",
+                         "LastWriteTime":  "2025-08-19 18:27:28",
+                         "Name":  "LICENSE",
+                         "Extension":  ""
+                     },
+                     {
+                         "Type":  "File",
+                         "Size":  694851,
+                         "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\package-lock.json",
+                         "LastWriteTime":  "2025-08-19 17:40:47",
+                         "Name":  "package-lock.json",
+                         "Extension":  ".json"
+                     },
+                     {
+                         "Type":  "File",
+                         "Size":  1167,
+                         "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\package.json",
+                         "LastWriteTime":  "2025-08-25 22:02:40",
+                         "Name":  "package.json",
+                         "Extension":  ".json"
+                     },
+                     {
+                         "Type":  "File",
+                         "Size":  3917,
+                         "FullPath":  "C:\\xampp\\htdocs\\sala-ensayos\\README.md",
+                         "LastWriteTime":  "2025-08-21 14:50:54",
+                         "Name":  "README.md",
+                         "Extension":  ".md"
+                     }
+                 ]
+}
