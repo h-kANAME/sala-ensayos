@@ -1,15 +1,9 @@
 RewriteEngine On
 
-# Habilitar CORS para todas las peticiones API
-Header always set Access-Control-Allow-Origin "http://localhost:3000"
-Header always set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
-Header always set Access-Control-Allow-Headers "Content-Type, Authorization"
+# CORS es manejado dinámicamente por PHP en api/index.php
+# No establecer headers CORS aquí para evitar conflictos
 
-# Manejar preflight requests
-RewriteCond %{REQUEST_METHOD} OPTIONS
-RewriteRule ^(.*)$ - [R=200,L]
-
-# Redireccionar todas las peticiones API al index.php
+# Redireccionar todas las peticiones API al index.php (incluyendo OPTIONS)
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^api/(.*)$ api/index.php [QSA,L]

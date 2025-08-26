@@ -3,7 +3,7 @@ import { api } from './api';
 export const authService = {
     login: async (credentials) => {
         try {
-            const response = await api.post('/auth/login.php', credentials);
+            const response = await api.post('/auth/login', credentials);
             return response;
         } catch (error) {
             throw new Error(error.message || 'Error en el login');
@@ -12,7 +12,7 @@ export const authService = {
 
     verifyToken: async () => {
         try {
-            const response = await api.get('/auth/verify.php');
+            const response = await api.get('/auth/verify');
             return response;
         } catch (error) {
             throw new Error(error.message || 'Error verificando token');
@@ -21,7 +21,7 @@ export const authService = {
 
     logout: async () => {
         try {
-            const response = await api.post('/auth/logout.php');
+            const response = await api.post('/auth/logout');
             return response;
         } catch (error) {
             throw new Error('Error en logout');

@@ -124,9 +124,13 @@ function AppContent() {
 }
 
 function App() {
+  // Detectar si estamos en producción para configurar el basename
+  const basename = window.location.hostname !== 'localhost' && 
+                   window.location.hostname !== '127.0.0.1' ? '/sala-ensayos' : '';
+                   
   return (
     <AuthProvider>
-      <Router>
+      <Router basename={basename}>
         <AppContent />
       </Router>
     </AuthProvider>

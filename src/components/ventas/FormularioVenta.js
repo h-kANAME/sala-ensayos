@@ -304,7 +304,7 @@ const FormularioVenta = ({ onVentaCreada, onCancelar }) => {
                                 required
                             >
                                 <option value="efectivo">Efectivo</option>
-                                <option value="tarjeta">Tarjeta</option>
+                                {/* <option value="tarjeta">Tarjeta</option> */}
                                 <option value="transferencia">Transferencia</option>
                             </select>
                         </div>

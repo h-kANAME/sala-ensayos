@@ -1,10 +1,20 @@
 <?php
+require_once __DIR__ . '/environment.php';
+
 class Database {
-    private $host = "mysql";
-    private $db_name = "sala_ensayos";
-    private $username = "sala_user";
-    private $password = "salapassword";
+    private $host;
+    private $db_name;
+    private $username;
+    private $password;
     public $conn;
+
+    public function __construct() {
+        $dbConfig = Environment::get('database');
+        $this->host = $dbConfig['host'];
+        $this->db_name = $dbConfig['database'];
+        $this->username = $dbConfig['username'];
+        $this->password = $dbConfig['password'];
+    }
 
     public function getConnection() {
         $this->conn = null;

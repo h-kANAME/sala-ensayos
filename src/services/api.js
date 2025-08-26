@@ -1,5 +1,29 @@
-// Configuración base de la API
-const API_BASE_URL = 'http://localhost:8080/public/api';
+// Configuración base de la API - Auto-detección de entorno
+const getApiBaseUrl = () => {
+  // Detectar entorno automáticamente
+  const isProduction = window.location.hostname !== 'localhost' && 
+                      window.location.hostname !== '127.0.0.1';
+  
+  if (isProduction) {
+    // Entorno de producción
+    return `${window.location.protocol}//${window.location.host}/sala-ensayos/api`;
+  } else {
+    // Entorno de desarrollo
+    const port = window.location.port || (window.location.protocol === 'https:' ? '443' : '80');
+    if (port === '3000') {
+      // React dev server corriendo en puerto 3000, usar Docker en 8080
+      return 'http://localhost:8080/public/api';
+    } else if (port === '8080') {
+      // Accediendo directamente a Docker
+      return `${window.location.protocol}//${window.location.host}/public/api`;
+    } else {
+      // Fallback para otros puertos
+      return `http://localhost:8080/public/api`;
+    }
+  }
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 // Función helper para hacer requests
 const apiRequest = async (url, options = {}) => {
