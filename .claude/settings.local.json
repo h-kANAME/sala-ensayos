@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(docker exec:*)",
-      "Bash(sed:*)"
+      "Bash(sed:*)",
+      "Bash(curl:*)"
     ],
     "deny": [],
     "ask": []
