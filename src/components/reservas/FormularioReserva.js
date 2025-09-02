@@ -26,6 +26,7 @@ const FormularioReserva = ({ onReservaCreada, onCancelar, fechaSeleccionada = nu
   // Estados para validación
   const [disponible, setDisponible] = useState(true);
   const [validandoDisponibilidad, setValidandoDisponibilidad] = useState(false);
+  const [conflictoBanda, setConflictoBanda] = useState({ sin_conflicto: true, reservas_conflicto: '' });
   
   // Estado para formato de hora (24h o AM/PM)
   const [formatoHora, setFormatoHora] = useState('24h'); // '24h' o 'ampm'
@@ -63,19 +64,8 @@ const FormularioReserva = ({ onReservaCreada, onCancelar, fechaSeleccionada = nu
 
   // Función para determinar la fecha correcta basada en la hora de inicio
   const calcularFechaCorrecta = (fechaSeleccionada, horaInicio) => {
-    if (!fechaSeleccionada || !horaInicio) return fechaSeleccionada;
-    
-    const [horas, minutos] = horaInicio.split(':').map(Number);
-    
-    // Si la hora de inicio es entre 00:00 y 05:59, se considera del día siguiente
-    // Esto maneja el caso: reservar 00:30-01:30 el día 21/08 debe aparecer en reservas del 22/08
-    if (horas >= 0 && horas < 6) {
-      const fechaBase = new Date(fechaSeleccionada + 'T00:00:00');
-      fechaBase.setDate(fechaBase.getDate() + 1); // Agregar un día
-      return fechaBase.toISOString().split('T')[0];
-    }
-    
-    // Para horarios de 06:00 en adelante (incluyendo 23:00), mantener la fecha original
+    // SIMPLIFICADO: La fecha seleccionada es la fecha que se guarda
+    // Una reserva del 27/08 a la 1 AM se guarda como 27/08 a la 1 AM
     return fechaSeleccionada;
   };
 
@@ -107,12 +97,16 @@ const FormularioReserva = ({ onReservaCreada, onCancelar, fechaSeleccionada = nu
 
   // Validar disponibilidad cuando cambian los datos relevantes
   useEffect(() => {
-    const { sala_id, fecha_reserva, hora_inicio, hora_fin } = formData;
+    const { cliente_id, sala_id, fecha_reserva, hora_inicio, hora_fin } = formData;
     
     if (sala_id && fecha_reserva && hora_inicio && hora_fin) {
       validarDisponibilidad();
     }
-  }, [formData.sala_id, formData.fecha_reserva, formData.hora_inicio, formData.hora_fin]);
+
+    if (cliente_id && fecha_reserva && hora_inicio && hora_fin) {
+      validarConflictoBanda();
+    }
+  }, [formData.cliente_id, formData.sala_id, formData.fecha_reserva, formData.hora_inicio, formData.hora_fin]);
 
   const cargarDatos = async () => {
     try {
@@ -157,20 +151,56 @@ const FormularioReserva = ({ onReservaCreada, onCancelar, fechaSeleccionada = nu
     
     try {
       console.log('🔍 Validando disponibilidad...');
-      const resultado = await reservasService.verificarDisponibilidad(
+      const excluirId = reservaEditando?.id || null;
+      const response = await reservasService.verificarDisponibilidad(
         sala_id,
         fecha_reserva,
         hora_inicio,
-        hora_fin
+        hora_fin,
+        excluirId
       );
       
-      setDisponible(resultado.disponible !== false);
+      // Manejar diferentes formatos de respuesta
+      const disponibleValue = response?.data?.disponible ?? response?.disponible ?? true;
+      setDisponible(disponibleValue);
       
     } catch (error) {
       console.error('❌ Error al validar disponibilidad:', error);
       setDisponible(true); // Asumir disponible si hay error
     } finally {
       setValidandoDisponibilidad(false);
+    }
+  };
+
+  const validarConflictoBanda = async () => {
+    const { cliente_id, fecha_reserva, hora_inicio, hora_fin } = formData;
+    
+    if (!cliente_id || !fecha_reserva || !hora_inicio || !hora_fin) {
+      setConflictoBanda({ sin_conflicto: true, reservas_conflicto: '' });
+      return;
+    }
+    
+    try {
+      console.log('🔍 Validando conflicto de banda...');
+      const excluirId = reservaEditando?.id || null;
+      const response = await reservasService.verificarConflictoBanda(
+        cliente_id,
+        fecha_reserva,
+        hora_inicio,
+        hora_fin,
+        excluirId
+      );
+      
+      // Manejar diferentes formatos de respuesta
+      const resultado = response?.data || response;
+      setConflictoBanda({
+        sin_conflicto: resultado?.sin_conflicto ?? true,
+        reservas_conflicto: resultado?.reservas_conflicto ?? ''
+      });
+      
+    } catch (error) {
+      console.error('❌ Error al validar conflicto de banda:', error);
+      setConflictoBanda({ sin_conflicto: true, reservas_conflicto: '' }); // Asumir sin conflicto si hay error
     }
   };
 
@@ -191,6 +221,11 @@ const FormularioReserva = ({ onReservaCreada, onCancelar, fechaSeleccionada = nu
     
     if (!disponible) {
       setError('La sala no está disponible en el horario seleccionado');
+      return;
+    }
+
+    if (!conflictoBanda.sin_conflicto) {
+      setError(`Esta banda ya tiene reserva en: ${conflictoBanda.reservas_conflicto || 'el mismo horario en otra sala'}`);
       return;
     }
 
@@ -385,11 +420,6 @@ const FormularioReserva = ({ onReservaCreada, onCancelar, fechaSeleccionada = nu
             <p><strong>📅 Esta reserva aparecerá en:</strong></p>
             <p>Fecha seleccionada: {new Date(formData.fecha_reserva + 'T00:00:00').toLocaleDateString('es-ES')}</p>
             <p>Aparecerá en calendario del: {new Date(calcularFechaCorrecta(formData.fecha_reserva, formData.hora_inicio) + 'T00:00:00').toLocaleDateString('es-ES')}</p>
-            {calcularFechaCorrecta(formData.fecha_reserva, formData.hora_inicio) !== formData.fecha_reserva && (
-              <p className="fecha-info">
-                ℹ️ Las reservas entre 00:00 y 05:59 se asignan al día siguiente
-              </p>
-            )}
           </div>
         )}
 
@@ -402,6 +432,15 @@ const FormularioReserva = ({ onReservaCreada, onCancelar, fechaSeleccionada = nu
         {!validandoDisponibilidad && formData.sala_id && formData.hora_inicio && formData.hora_fin && (
           <div className={`availability-status ${disponible ? 'available' : 'unavailable'}`}>
             {disponible ? '✅ Horario disponible' : '❌ Horario no disponible'}
+          </div>
+        )}
+
+        {formData.cliente_id && formData.fecha_reserva && formData.hora_inicio && formData.hora_fin && (
+          <div className={`availability-status ${conflictoBanda.sin_conflicto ? 'available' : 'unavailable'}`}>
+            {conflictoBanda.sin_conflicto 
+              ? '✅ Sin conflicto de banda' 
+              : `❌ Esta banda ya tiene reserva en: ${conflictoBanda.reservas_conflicto || 'horario coincidente'}`
+            }
           </div>
         )}
 
@@ -420,7 +459,7 @@ const FormularioReserva = ({ onReservaCreada, onCancelar, fechaSeleccionada = nu
         <div className="form-actions">
           <button
             type="submit"
-            disabled={loading || !disponible || validandoDisponibilidad}
+            disabled={loading || !disponible || !conflictoBanda.sin_conflicto || validandoDisponibilidad}
             className="btn btn-primary"
           >
             {loading 

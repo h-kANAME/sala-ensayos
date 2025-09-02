@@ -1,0 +1,1102 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reservas Online - Sala de Ensayos</title>
+    <meta name="description" content="Sistema de reservas online para sala de ensayos musicales. Reserva fácil y rápido.">
+    <meta name="keywords" content="sala ensayos, reservas, música, bandas, online">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    
+    <!-- EmailJS -->
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    
+    <!-- Estilos CSS embebidos para performance -->
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin: 0;
+        }
+
+        .step-content {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 20px 0;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            color: #333;
+            min-height: 400px;
+        }
+
+        .loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 300px;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        .error {
+            text-align: center;
+            padding: 40px;
+            color: #dc3545;
+        }
+
+        .error-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Slot card styles */
+        .slot-card {
+            border: 1px solid #ddd !important;
+            border-radius: 8px !important;
+            padding: 15px !important;
+            text-align: center !important;
+            cursor: pointer !important;
+            transition: all 0.2s !important;
+            background: white !important;
+            color: #333 !important;
+        }
+
+        .slot-card.selected {
+            border-color: #28a745 !important;
+            background-color: #28a745 !important;
+            color: white !important;
+        }
+
+        .slot-card.selected div {
+            color: white !important;
+        }
+
+        .slot-card.selected div:last-child {
+            color: rgba(255, 255, 255, 0.9) !important;
+        }
+
+        /* Date card styles */
+        .date-card {
+            border: 1px solid #ddd !important;
+            border-radius: 8px !important;
+            padding: 12px !important;
+            text-align: center !important;
+            cursor: pointer !important;
+            transition: all 0.2s !important;
+            background: white !important;
+            color: #333 !important;
+        }
+
+        .date-card.selected {
+            border-color: #667eea !important;
+            background-color: #667eea !important;
+            color: white !important;
+        }
+
+        .date-card.selected div {
+            color: white !important;
+        }
+
+        /* Busy slot card styles */
+        .busy-slot-card {
+            border: 1px solid #dc3545 !important;
+            border-radius: 8px !important;
+            padding: 12px !important;
+            text-align: center !important;
+            background: #f8d7da !important;
+            color: #721c24 !important;
+        }
+
+        .busy-slot-card div {
+            color: #721c24 !important;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .subtitle {
+                font-size: 1rem;
+            }
+            
+            .step-content {
+                padding: 20px;
+                margin: 10px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Reserva tu Sala en JAM!</h1>
+            <p class="subtitle">Sistema de reservas online</p>
+        </div>
+
+        <div class="step-content">
+            <div id="loading" class="loading">
+                <div class="spinner"></div>
+                <p>Cargando sistema de reservas...</p>
+            </div>
+
+            <div id="error" class="error" style="display: none;">
+                <div class="error-icon">⚠️</div>
+                <h2>Error al cargar</h2>
+                <p>No se pudo cargar el sistema de reservas.</p>
+                <p>Por favor, recarga la página o intenta más tarde.</p>
+            </div>
+
+            <!-- El contenido se cargará aquí -->
+            <div id="reservas-app" style="display: none;"></div>
+        </div>
+    </div>
+
+    <!-- Ahora usando JavaScript vanilla - no necesitamos React -->
+    
+    <!-- EmailJS initialization -->
+    <script>
+        // Configuración EmailJS (estas variables deben configurarse en el servidor)
+        const EMAILJS_CONFIG = {
+            serviceId: 'service_vqjf41e', // Configurar: Service ID de EmailJS
+            templateId: 'template_e34j08k', // Configurar: Template ID para código de verificación
+            publicKey: 'bAa_Sm9VX9RKw5KJq' // Configurar: Public Key de EmailJS (antes llamado User ID)
+        };
+
+        // Inicializar EmailJS
+        if (EMAILJS_CONFIG.publicKey) {
+            emailjs.init(EMAILJS_CONFIG.publicKey);
+        }
+    </script>
+
+    <!-- Componente HTML/JS simple -->
+    <script>
+        // Configuración FIJA para DESARROLLO LOCAL - Docker localhost:8080
+        const API_BASE = '/public/api/public-reservas';
+        console.log('🔗 API Base URL (LOCAL):', API_BASE);
+        
+        // Variables globales
+        let currentStep = 1;
+        let selectedBand = null;
+        let searchTimeout = null;
+
+        const STEPS = {
+            SEARCH_BAND: 1,
+            SELECT_DATETIME: 2,
+            VERIFICATION: 3,
+            CONFIRMED: 4
+        };
+
+        // Función para buscar bandas
+        async function searchBands(term) {
+            if (term.length < 2) {
+                showBandResults([]);
+                return;
+            }
+
+            try {
+                document.getElementById('band-results').innerHTML = '<p>Buscando...</p>';
+                
+                const response = await fetch(`${API_BASE}/search-bands?q=${encodeURIComponent(term)}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    showBandResults(data.data);
+                } else {
+                    document.getElementById('band-results').innerHTML = '<p>Error al buscar bandas</p>';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('band-results').innerHTML = '<p>Error de conexión</p>';
+            }
+        }
+
+        // Mostrar resultados de búsqueda
+        function showBandResults(bands) {
+            const resultsDiv = document.getElementById('band-results');
+            
+            if (bands.length === 0) {
+                resultsDiv.innerHTML = '<p>No se encontraron bandas</p>';
+                return;
+            }
+
+            let html = '<div style="border: 1px solid #ddd; border-radius: 8px; margin-top: 10px;">';
+            bands.forEach(band => {
+                html += `
+                    <div onclick="selectBand(${band.id}, '${band.nombre_banda}', '${band.contacto_email}')" 
+                         style="padding: 15px; border-bottom: 1px solid #f0f0f0; cursor: pointer; transition: background 0.2s;"
+                         onmouseover="this.style.background='#f8f9fa'"
+                         onmouseout="this.style.background='white'">
+                        <div style="font-weight: 600; margin-bottom: 4px;">${band.nombre_banda}</div>
+                        <div style="font-size: 0.9rem; color: #666;">${band.contacto_email}</div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            
+            resultsDiv.innerHTML = html;
+        }
+
+        // Seleccionar banda
+        function selectBand(id, nombre, email) {
+            selectedBand = { id, nombre_banda: nombre, contacto_email: email };
+            showStep(STEPS.SELECT_DATETIME);
+        }
+
+        // Mostrar paso específico
+        function showStep(step) {
+            currentStep = step;
+            const appDiv = document.getElementById('reservas-app');
+            
+            switch(step) {
+                case STEPS.SEARCH_BAND:
+                    appDiv.innerHTML = `
+                        <div style="padding: 20px 0;">
+                            <h2>Paso 1: Buscar tu banda</h2>
+                            <p style="color: #666; margin-bottom: 20px;">
+                                Ingresa el nombre de tu banda para comenzar el proceso de reserva.
+                            </p>
+                            
+                            <input type="text" 
+                                   id="search-input"
+                                   placeholder="Ejemplo: Los Rockeros, Jazz Fusion..."
+                                   style="width: 100%; padding: 15px; border: 2px solid #e9ecef; border-radius: 10px; font-size: 1.1rem; margin-bottom: 15px;"
+                                   oninput="handleSearchInput(this.value)" />
+                            
+                            <div id="band-results"></div>
+                            
+                            <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin-top: 30px;">
+                                <h3 style="margin-bottom: 15px;">¿No encuentras tu banda?</h3>
+                                <ul style="margin: 0; padding-left: 20px;">
+                                    <li>Verifica que el nombre esté escrito correctamente</li>
+                                    <li>Tu banda debe estar registrada en nuestro sistema</li>
+                                    <li>Debe tener un email de contacto registrado</li>
+                                </ul>
+                            </div>
+                        </div>
+                    `;
+                    break;
+                    
+                case STEPS.SELECT_DATETIME:
+                    appDiv.innerHTML = `
+                        <div style="padding: 20px 0;">
+                            <h2>Paso 2: Seleccionar horario</h2>
+                            <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #2196f3;">
+                                <strong>Banda seleccionada:</strong> ${selectedBand.nombre_banda}<br>
+                                <strong>Email:</strong> ${selectedBand.contacto_email}
+                            </div>
+                            
+                            <!-- Selector de Sala -->
+                            <div style="margin-bottom: 30px;">
+                                <h3>Selecciona la sala</h3>
+                                <div id="salas-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
+                                    <p>Cargando salas...</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Selector de Fecha -->
+                            <div id="date-selector" style="display: none; margin-bottom: 30px;">
+                                <h3>Selecciona la fecha</h3>
+                                <div id="dates-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 10px; margin-bottom: 20px;">
+                                </div>
+                            </div>
+                            
+                            <!-- Selección de Horario Personalizado -->
+                            <div id="time-selector" style="display: none; margin-bottom: 30px;">
+                                <p id="selected-info" style="background: #f8f9fa; padding: 12px; border-radius: 8px; border-left: 4px solid #667eea; margin-bottom: 20px;"></p>
+                                
+                                <!-- Horarios Ocupados -->
+                                <div id="busy-slots-section" style="margin-bottom: 30px;">
+                                    <h3>Horarios ocupados</h3>
+                                    <div id="busy-slots-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px;">
+                                        <p>Cargando horarios ocupados...</p>
+                                    </div>
+                                </div>
+                                
+                                <!-- Controles de Tiempo -->
+                                <div style="background: #f8f9fa; padding: 25px; border-radius: 12px; border: 1px solid #e9ecef;">
+                                    <h3 style="margin-bottom: 20px;">Seleccionar horario</h3>
+                                    
+                                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 20px;">
+                                        <div>
+                                            <label style="display: block; margin-bottom: 8px; font-weight: bold; color: #333;">
+                                                Hora de inicio:
+                                            </label>
+                                            <input type="time" 
+                                                   id="hora-inicio"
+                                                   style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 1.1rem;"
+                                                   min="09:00" 
+                                                   max="22:00" 
+                                                   value="09:00">
+                                        </div>
+                                        
+                                        <div>
+                                            <label style="display: block; margin-bottom: 8px; font-weight: bold; color: #333;">
+                                                Hora de fin:
+                                            </label>
+                                            <input type="time" 
+                                                   id="hora-fin"
+                                                   style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 1.1rem;"
+                                                   min="10:00" 
+                                                   max="23:00" 
+                                                   value="10:00">
+                                        </div>
+                                    </div>
+                                    
+                                    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+                                        <span style="font-weight: bold; color: #333;">Duración:</span>
+                                        <span id="duracion-display" style="padding: 8px 16px; background: #667eea; color: white; border-radius: 6px; font-weight: bold;">1 hora</span>
+                                    </div>
+                                    
+                                    <div id="validation-message" style="display: none; padding: 12px; margin-bottom: 15px; border-radius: 8px;"></div>
+                                    
+                                    <button onclick="verificarDisponibilidad()" id="verificar-btn"
+                                            style="width: 100%; padding: 15px; background: #28a745; color: white; border: none; border-radius: 8px; font-size: 1.1rem; cursor: pointer; font-weight: bold;">
+                                        Verificar disponibilidad
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div style="margin-top: 30px; border-top: 1px solid #e9ecef; padding-top: 20px;">
+                                <button onclick="showStep(${STEPS.SEARCH_BAND})"
+                                        style="padding: 12px 24px; border: none; border-radius: 8px; background: #6c757d; color: white; cursor: pointer; font-size: 1rem;">
+                                    ← Volver a búsqueda
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Cargar salas después de renderizar
+                    setTimeout(loadSalas, 100);
+                    break;
+                    
+                case STEPS.VERIFICATION:
+                    const reservaData = arguments[1]; // Datos pasados como segundo parámetro
+                    appDiv.innerHTML = `
+                        <div style="padding: 20px 0;">
+                            <h2>Paso 3: Verificación por email</h2>
+                            <div style="background: #e8f5e8; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #28a745;">
+                                <h3 style="margin: 0 0 15px 0;">Resumen de tu reserva</h3>
+                                <p><strong>Banda:</strong> ${selectedBand.nombre_banda}</p>
+                                <p><strong>Email:</strong> ${selectedBand.contacto_email}</p>
+                                <p><strong>Sala:</strong> ${selectedSala.nombre}</p>
+                                <p><strong>Fecha:</strong> ${new Date(selectedDate).toLocaleDateString('es', { 
+                                    weekday: 'long', 
+                                    year: 'numeric', 
+                                    month: 'long', 
+                                    day: 'numeric' 
+                                })}</p>
+                                <p><strong>Horario:</strong> ${selectedSlot.hora_inicio.substring(0, 5)} - ${selectedSlot.hora_fin.substring(0, 5)}</p>
+                                <p><strong>Importe total:</strong> $${selectedSala.tarifa_hora}</p>
+                            </div>
+                            
+                            <div id="verification-status">
+                                <button onclick="startVerification()" id="start-verification-btn"
+                                        style="padding: 15px 30px; background: #28a745; color: white; border: none; border-radius: 8px; font-size: 1.1rem; cursor: pointer; font-weight: bold; width: 100%;">
+                                    Enviar código de verificación
+                                </button>
+                            </div>
+                            
+                            <div id="code-input-section" style="display: none; margin-top: 30px;">
+                                <h3>Ingresa el código de verificación</h3>
+                                <p style="color: #666; margin-bottom: 20px;">
+                                    Hemos enviado un código de 6 dígitos a <strong>${selectedBand.contacto_email}</strong>
+                                </p>
+                                <input type="text" 
+                                       id="verification-code"
+                                       placeholder="123456"
+                                       maxlength="6"
+                                       style="width: 200px; padding: 15px; border: 2px solid #ddd; border-radius: 8px; font-size: 1.5rem; text-align: center; margin-right: 15px;"
+                                       oninput="this.value = this.value.replace(/[^0-9]/g, '')" />
+                                <button onclick="verifyCode()" 
+                                        style="padding: 15px 25px; background: #667eea; color: white; border: none; border-radius: 8px; font-size: 1.1rem; cursor: pointer; font-weight: bold;">
+                                    Verificar
+                                </button>
+                            </div>
+                            
+                            <div style="margin-top: 30px; border-top: 1px solid #e9ecef; padding-top: 20px;">
+                                <button onclick="showStep(${STEPS.SELECT_DATETIME})"
+                                        style="padding: 12px 24px; border: none; border-radius: 8px; background: #6c757d; color: white; cursor: pointer; font-size: 1rem;">
+                                    ← Volver a selección
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    break;
+                    
+                case STEPS.CONFIRMED:
+                    appDiv.innerHTML = `
+                        <div style="padding: 20px 0; text-align: center;">
+                            <div style="font-size: 4rem; color: #28a745; margin-bottom: 20px;">✓</div>
+                            <h2 style="color: #28a745; margin-bottom: 20px;">¡Reserva confirmada!</h2>
+                            
+                            <div style="background: #e8f5e8; padding: 30px; border-radius: 15px; margin: 20px 0; border-left: 4px solid #28a745; text-align: left;">
+                                <h3 style="margin: 0 0 20px 0; text-align: center;">Detalles de tu reserva</h3>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                                    <div>
+                                        <p><strong>Banda:</strong> ${selectedBand.nombre_banda}</p>
+                                        <p><strong>Email:</strong> ${selectedBand.contacto_email}</p>
+                                        <p><strong>Sala:</strong> ${selectedSala.nombre}</p>
+                                    </div>
+                                    <div>
+                                        <p><strong>Fecha:</strong> ${new Date(selectedDate).toLocaleDateString('es', { 
+                                            weekday: 'long', 
+                                            year: 'numeric', 
+                                            month: 'long', 
+                                            day: 'numeric' 
+                                        })}</p>
+                                        <p><strong>Horario:</strong> ${selectedSlot.hora_inicio.substring(0, 5)} - ${selectedSlot.hora_fin.substring(0, 5)}</p>
+                                        <p><strong>Importe:</strong> $${selectedSala.tarifa_hora}</p>
+                                    </div>
+                                </div>
+                                
+                                <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #d4edda; text-align: center;">
+                                    <p style="margin: 0; font-weight: bold;">ID de Reserva: #${currentReservaId}</p>
+                                </div>
+                            </div>
+                            
+                            <div style="margin: 30px 0;">
+                                <h3>¿Qué sigue?</h3>
+                                <div style="text-align: left; max-width: 600px; margin: 0 auto;">
+                                    <ul style="font-size: 1.1rem; line-height: 1.6;">
+                                        <li>Con el mail de verificacion te llegaron todos los detalles</li>
+                                        <li>El pago se realiza en efectivo o transferencia al momento del check-in</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                            <div style="margin-top: 40px;">
+                                <button onclick="startNewReservation()"
+                                        style="padding: 15px 30px; background: #667eea; color: white; border: none; border-radius: 8px; font-size: 1.1rem; cursor: pointer; font-weight: bold; margin-right: 15px;">
+                                    Hacer nueva reserva
+                                </button>
+                                <button onclick="startNewReservation()" 
+                                        style="padding: 15px 30px; background: #6c757d; color: white; border: none; border-radius: 8px; font-size: 1.1rem; cursor: pointer; font-weight: bold;">
+                                    Volver al inicio
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    break;
+            }
+        }
+
+        // Manejar input de búsqueda con debounce
+        function handleSearchInput(value) {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                searchBands(value);
+            }, 300);
+        }
+
+        // Inicializar aplicación
+        function initApp() {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('error').style.display = 'none';
+            document.getElementById('reservas-app').style.display = 'block';
+            
+            showStep(STEPS.SEARCH_BAND);
+            
+            console.log('Sistema de reservas inicializado');
+            console.log('APIs disponibles:');
+            console.log(`- ${API_BASE}/search-bands?q=rock`);
+            console.log(`- ${API_BASE}/salas`);
+        }
+
+        // Variables globales para el proceso de reserva
+        let selectedSala = null;
+        let selectedDate = null;
+        let selectedSlot = null;
+
+        // Cargar salas disponibles
+        async function loadSalas() {
+            try {
+                const response = await fetch(`${API_BASE}/salas`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    showSalas(data.data);
+                } else {
+                    document.getElementById('salas-container').innerHTML = '<p>Error al cargar salas</p>';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('salas-container').innerHTML = '<p>Error de conexión</p>';
+            }
+        }
+
+        // Mostrar salas en el contenedor
+        function showSalas(salas) {
+            const container = document.getElementById('salas-container');
+            let html = '';
+            
+            salas.forEach(sala => {
+                html += `
+                    <div onclick="selectSala(${sala.id}, '${sala.nombre}', ${sala.tarifa_hora})" 
+                         class="sala-card"
+                         style="border: 2px solid #e9ecef; border-radius: 10px; padding: 20px; cursor: pointer; transition: all 0.3s; background: white;"
+                         onmouseover="this.style.borderColor='#667eea'; this.style.transform='translateY(-2px)'"
+                         onmouseout="this.style.borderColor='#e9ecef'; this.style.transform='translateY(0)'">
+                        <h4 style="margin: 0 0 10px 0; color: #333;">${sala.nombre}</h4>
+                        <p style="margin: 5px 0; color: #666; font-size: 0.9rem;">${sala.descripcion}</p>
+                        <p style="margin: 5px 0; color: #666; font-size: 0.9rem;"><strong>Capacidad:</strong> ${sala.capacidad} personas</p>
+                        <p style="margin: 5px 0; color: #667eea; font-weight: bold;">$${sala.tarifa_hora}/hora</p>
+                        <p style="margin: 10px 0 0 0; color: #666; font-size: 0.85rem;">${sala.equipamiento}</p>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        // Seleccionar sala
+        function selectSala(id, nombre, tarifa) {
+            selectedSala = { id, nombre, tarifa_hora: tarifa };
+            
+            // Marcar sala seleccionada visualmente
+            document.querySelectorAll('.sala-card').forEach(card => {
+                card.style.borderColor = '#e9ecef';
+                card.style.background = 'white';
+            });
+            
+            event.currentTarget.style.borderColor = '#667eea';
+            event.currentTarget.style.background = '#f8f9ff';
+            
+            // Mostrar selector de fecha
+            document.getElementById('date-selector').style.display = 'block';
+            loadDates();
+        }
+
+        // Cargar fechas disponibles (próximos 30 días)
+        function loadDates() {
+            const container = document.getElementById('dates-container');
+            const today = new Date();
+            let html = '';
+            
+            for (let i = 0; i < 30; i++) {
+                const date = new Date(today);
+                date.setDate(today.getDate() + i);
+                
+                // ARREGLO: Usar zona horaria local en lugar de UTC
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                const dateStr = `${year}-${month}-${day}`;
+                const dayName = date.toLocaleDateString('es', { weekday: 'short' });
+                const dayNumber = date.getDate();
+                const monthName = date.toLocaleDateString('es', { month: 'short' });
+                
+                html += `
+                    <div onclick="selectDate('${dateStr}')" 
+                         class="date-card"
+                         onmouseover="if (!this.classList.contains('selected')) { this.style.borderColor='#667eea'; this.style.background='#f8f9ff'; }"
+                         onmouseout="if (!this.classList.contains('selected')) { this.style.borderColor='#ddd'; this.style.background='white'; }">
+                        <div style="font-size: 0.8rem; color: inherit; text-transform: uppercase;">${dayName}</div>
+                        <div style="font-size: 1.2rem; font-weight: bold; margin: 2px 0; color: inherit;">${dayNumber}</div>
+                        <div style="font-size: 0.8rem; color: inherit; text-transform: capitalize;">${monthName}</div>
+                    </div>
+                `;
+            }
+            
+            container.innerHTML = html;
+        }
+
+        // Seleccionar fecha
+        function selectDate(dateStr) {
+            selectedDate = dateStr;
+            
+            // Remover clase 'selected' de todas las date cards
+            document.querySelectorAll('.date-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            
+            // Aplicar clase 'selected' al elemento clickeado
+            event.currentTarget.classList.add('selected');
+            
+            // Mostrar información seleccionada
+            const selectedDate_formatted = new Date(dateStr).toLocaleDateString('es', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+            
+            document.getElementById('selected-info').innerHTML = 
+                `<strong>Sala:</strong> ${selectedSala.nombre} | <strong>Fecha:</strong> ${selectedDate_formatted}`;
+            
+            // Mostrar selector de horarios
+            document.getElementById('time-selector').style.display = 'block';
+            loadAvailableSlots();
+        }
+
+        // Variables globales para la nueva interfaz
+        let horariosOcupados = [];
+        let configuracionHorarios = {};
+
+        // Cargar horarios ocupados y configuración
+        async function loadAvailableSlots() {
+            const busyContainer = document.getElementById('busy-slots-container');
+            busyContainer.innerHTML = '<p>Cargando horarios ocupados...</p>';
+            
+            try {
+                const response = await fetch(`${API_BASE}/availability?sala_id=${selectedSala.id}&fecha=${selectedDate}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    horariosOcupados = data.data.horarios_ocupados || [];
+                    configuracionHorarios = data.data.configuracion || {};
+                    
+                    showBusySlots(horariosOcupados);
+                    setupTimeControls();
+                } else {
+                    busyContainer.innerHTML = '<p>Error al cargar horarios</p>';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                busyContainer.innerHTML = '<p>Error de conexión</p>';
+            }
+        }
+
+        // Mostrar horarios ocupados
+        function showBusySlots(slots) {
+            const container = document.getElementById('busy-slots-container');
+            let html = '';
+            
+            if (slots.length === 0) {
+                html = '<p style="color: #28a745; font-weight: bold;">✓ No hay horarios ocupados para esta fecha</p>';
+            } else {
+                slots.forEach(slot => {
+                    const horaInicio = slot.hora_inicio.substring(0, 5); // HH:MM
+                    const horaFin = slot.hora_fin.substring(0, 5); // HH:MM
+                    
+                    html += `
+                        <div class="busy-slot-card">
+                            <div style="font-weight: bold;">${horaInicio} - ${horaFin}</div>
+                            <div style="font-size: 0.85rem; margin-top: 4px;">No disponible</div>
+                        </div>
+                    `;
+                });
+            }
+            
+            container.innerHTML = html;
+        }
+
+        // Configurar controles de tiempo
+        function setupTimeControls() {
+            const horaInicio = document.getElementById('hora-inicio');
+            const horaFin = document.getElementById('hora-fin');
+            const duracionDisplay = document.getElementById('duracion-display');
+            
+            // Configurar límites según la configuración del backend
+            if (configuracionHorarios.hora_apertura) {
+                const apertura = configuracionHorarios.hora_apertura.substring(0, 5);
+                const cierre = configuracionHorarios.hora_cierre.substring(0, 5);
+                
+                horaInicio.min = apertura;
+                horaInicio.max = cierre;
+                horaFin.min = apertura;
+                horaFin.max = cierre;
+                
+                horaInicio.value = apertura;
+                // Hora fin por defecto una hora después
+                const inicioTime = new Date(`2000-01-01 ${apertura}`);
+                inicioTime.setHours(inicioTime.getHours() + 1);
+                horaFin.value = inicioTime.toTimeString().substring(0, 5);
+            }
+            
+            // Actualizar duración cuando cambien las horas
+            function actualizarDuracion() {
+                const inicio = horaInicio.value;
+                const fin = horaFin.value;
+                
+                if (inicio && fin) {
+                    const duracion = calcularDuracion(inicio, fin);
+                    if (duracion > 0) {
+                        duracionDisplay.textContent = duracion === 1 ? '1 hora' : `${duracion} horas`;
+                        duracionDisplay.style.background = '#667eea';
+                    } else {
+                        duracionDisplay.textContent = 'Inválido';
+                        duracionDisplay.style.background = '#dc3545';
+                    }
+                }
+            }
+            
+            horaInicio.addEventListener('change', actualizarDuracion);
+            horaFin.addEventListener('change', actualizarDuracion);
+            
+            // Actualizar duración inicial
+            actualizarDuracion();
+        }
+
+        // Calcular duración en horas
+        function calcularDuracion(horaInicio, horaFin) {
+            const inicio = new Date(`2000-01-01 ${horaInicio}:00`);
+            const fin = new Date(`2000-01-01 ${horaFin}:00`);
+            
+            const diferencia = (fin - inicio) / (1000 * 60 * 60); // Diferencia en horas
+            return diferencia;
+        }
+
+        // Verificar si hay conflicto con horarios ocupados
+        function verificarConflictoHorarios(horaInicio, horaFin) {
+            const inicioReserva = new Date(`2000-01-01 ${horaInicio}:00`);
+            const finReserva = new Date(`2000-01-01 ${horaFin}:00`);
+            
+            for (let horario of horariosOcupados) {
+                const inicioOcupado = new Date(`2000-01-01 ${horario.hora_inicio}`);
+                const finOcupado = new Date(`2000-01-01 ${horario.hora_fin}`);
+                
+                // Verificar si hay superposición
+                if (inicioReserva < finOcupado && finReserva > inicioOcupado) {
+                    return true; // Hay conflicto
+                }
+            }
+            
+            return false; // No hay conflicto
+        }
+
+        // Verificar disponibilidad del horario seleccionado
+        function verificarDisponibilidad() {
+            const horaInicio = document.getElementById('hora-inicio').value;
+            const horaFin = document.getElementById('hora-fin').value;
+            const validationMsg = document.getElementById('validation-message');
+            const verificarBtn = document.getElementById('verificar-btn');
+            
+            // Limpiar mensaje anterior
+            validationMsg.style.display = 'none';
+            
+            // Validar que se hayan seleccionado ambas horas
+            if (!horaInicio || !horaFin) {
+                mostrarValidationMessage('Por favor seleccioná ambas horas', 'error');
+                return;
+            }
+            
+            // Validar duración mínima y que sea en horas completas
+            const duracion = calcularDuracion(horaInicio, horaFin);
+            
+            if (duracion <= 0) {
+                mostrarValidationMessage('La hora de fin debe ser posterior a la hora de inicio', 'error');
+                return;
+            }
+            
+            if (duracion % 1 !== 0) {
+                mostrarValidationMessage('Solo se permiten reservas por horas completas (ejemplo: 1h, 2h, 3h)', 'error');
+                return;
+            }
+            
+            // Verificar conflictos con horarios ocupados
+            if (verificarConflictoHorarios(horaInicio, horaFin)) {
+                mostrarValidationMessage('El horario seleccionado no está disponible. Elegí otro horario', 'error');
+                return;
+            }
+            
+            // Si llegamos acá, el horario está disponible
+            mostrarValidationMessage('✓ Horario disponible', 'success');
+            
+            // Guardar selección y mostrar botón de continuar
+            selectedSlot = { 
+                hora_inicio: horaInicio + ':00', 
+                hora_fin: horaFin + ':00' 
+            };
+            
+            // Cambiar botón a "Continuar"
+            verificarBtn.innerHTML = 'Continuar con la reserva →';
+            verificarBtn.style.background = '#667eea';
+            verificarBtn.onclick = proceedToVerification;
+        }
+
+        // Mostrar mensaje de validación
+        function mostrarValidationMessage(mensaje, tipo) {
+            const validationMsg = document.getElementById('validation-message');
+            
+            validationMsg.textContent = mensaje;
+            validationMsg.style.display = 'block';
+            
+            if (tipo === 'error') {
+                validationMsg.style.background = '#f8d7da';
+                validationMsg.style.color = '#721c24';
+                validationMsg.style.borderLeft = '4px solid #dc3545';
+            } else {
+                validationMsg.style.background = '#d4edda';
+                validationMsg.style.color = '#155724';
+                validationMsg.style.borderLeft = '4px solid #28a745';
+            }
+        }
+
+        // Proceder a verificación
+        async function proceedToVerification() {
+            if (!selectedSala || !selectedDate || !selectedSlot) {
+                alert('Por favor completa la selección');
+                return;
+            }
+            
+            // Validar conflicto de banda antes de proceder
+            try {
+                const conflictoResponse = await fetch(`${API_BASE}/verificar-banda?cliente_id=${selectedBand.id}&fecha=${selectedDate}&hora_inicio=${selectedSlot.hora_inicio}&hora_fin=${selectedSlot.hora_fin}`);
+                const conflictoData = await conflictoResponse.json();
+                
+                if (!conflictoData.sin_conflicto) {
+                    alert(`No se puede proceder: Esta banda ya tiene una reserva en ese horario: ${conflictoData.reservas_conflicto}`);
+                    return;
+                }
+            } catch (error) {
+                console.error('Error al validar conflicto de banda:', error);
+                // Continuar si hay error en la validación (para no bloquear completamente)
+            }
+            
+            // Calcular horas reservadas (asumimos 1 hora por slot por ahora)
+            const horasReservadas = 1;
+            const importeTotal = selectedSala.tarifa_hora * horasReservadas;
+            
+            // Preparar datos para el siguiente paso
+            const reservaData = {
+                cliente_id: selectedBand.id,
+                sala_id: selectedSala.id,
+                fecha_reserva: selectedDate,
+                hora_inicio: selectedSlot.hora_inicio,
+                hora_fin: selectedSlot.hora_fin,
+                horas_reservadas: horasReservadas
+            };
+            
+            // Mostrar paso de verificación
+            showStep(STEPS.VERIFICATION, reservaData);
+        }
+
+        // Variables globales para verificación
+        let currentReservaId = null;
+        let verificationCode = null;
+
+        // Iniciar proceso de verificación
+        async function startVerification() {
+            const button = document.getElementById('start-verification-btn');
+            button.disabled = true;
+            button.innerHTML = 'Enviando...';
+            
+            try {
+                const reservaData = {
+                    cliente_id: selectedBand.id,
+                    sala_id: selectedSala.id,
+                    fecha_reserva: selectedDate,
+                    hora_inicio: selectedSlot.hora_inicio,
+                    hora_fin: selectedSlot.hora_fin,
+                    horas_reservadas: 1
+                };
+                
+                const response = await fetch(`${API_BASE}/start-reservation`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(reservaData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    currentReservaId = data.data.reserva_id;
+                    verificationCode = data.data.codigo_para_envio; // Para integración con EmailJS
+                    
+                    // Enviar email usando EmailJS
+                    await sendVerificationEmail(data.data);
+                    
+                    // Mostrar sección de input del código
+                    document.getElementById('code-input-section').style.display = 'block';
+                    
+                    // Actualizar estado del botón
+                    button.innerHTML = 'Código enviado ✓';
+                    button.style.background = '#28a745';
+                    
+                } else {
+                    alert('Error: ' + data.message);
+                    button.disabled = false;
+                    button.innerHTML = 'Enviar código de verificación';
+                }
+                
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error de conexión. Por favor intenta nuevamente.');
+                button.disabled = false;
+                button.innerHTML = 'Enviar código de verificación';
+            }
+        }
+
+        // Enviar email de verificación usando EmailJS
+        async function sendVerificationEmail(data) {
+            if (!EMAILJS_CONFIG.publicKey) {
+                console.warn('EmailJS no configurado');
+                return;
+            }
+            
+            try {
+                const templateParams = {
+                    to_email: data.email_destino,
+                    banda_nombre: data.banda_nombre,
+                    verification_code: data.codigo_para_envio,
+                    sala_nombre: data.sala_nombre,
+                    fecha_reserva: new Date(selectedDate).toLocaleDateString('es', { 
+                        weekday: 'long', 
+                        year: 'numeric', 
+                        month: 'long', 
+                        day: 'numeric' 
+                    }),
+                    horario: `${selectedSlot.hora_inicio.substring(0, 5)} - ${selectedSlot.hora_fin.substring(0, 5)}`,
+                    importe_total: data.importe_total
+                };
+                
+                await emailjs.send(
+                    EMAILJS_CONFIG.serviceId,
+                    EMAILJS_CONFIG.templateId,
+                    templateParams
+                );
+                
+                console.log('Email enviado exitosamente');
+                
+            } catch (error) {
+                console.error('Error enviando email:', error);
+                // No fallar la operación si el email falla
+            }
+        }
+
+        // Verificar código ingresado
+        async function verifyCode() {
+            const codeInput = document.getElementById('verification-code');
+            const code = codeInput.value.trim();
+            
+            if (!code || code.length !== 6) {
+                alert('Por favor ingresa un código de 6 dígitos');
+                return;
+            }
+            
+            if (!currentReservaId) {
+                alert('Error: No se encontró la reserva. Por favor inicia el proceso nuevamente.');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/verify-code`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        reserva_id: currentReservaId,
+                        codigo: code
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Mostrar paso de confirmación
+                    showStep(STEPS.CONFIRMED);
+                } else {
+                    alert('Código incorrecto: ' + data.message);
+                    codeInput.value = '';
+                    codeInput.focus();
+                }
+                
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error de conexión. Por favor intenta nuevamente.');
+            }
+        }
+
+        // Reiniciar el proceso de reserva
+        function startNewReservation() {
+            // Resetear variables globales
+            selectedBand = null;
+            selectedSala = null;
+            selectedDate = null;
+            selectedSlot = null;
+            currentReservaId = null;
+            verificationCode = null;
+            
+            // Volver al paso 1
+            showStep(STEPS.SEARCH_BAND);
+        }
+
+        // Volver a la página principal
+        function goToMainPage() {
+            const currentHost = window.location.host;
+            const currentProtocol = window.location.protocol;
+            
+            // Determinar la URL según el entorno
+            let targetUrl;
+            if (currentHost.includes('localhost') || currentHost.includes('127.0.0.1')) {
+                // Desarrollo local con Docker
+                if (currentHost.includes('8080')) {
+                    // Ir al dashboard principal del admin
+                    targetUrl = `${currentProtocol}//${currentHost}/`;
+                } else {
+                    // Desarrollo con React (puerto 3000)
+                    targetUrl = `${currentProtocol}//${currentHost}:3000/`;
+                }
+            } else {
+                // Producción - ir al dashboard principal
+                targetUrl = `${currentProtocol}//${currentHost}/sala-ensayos/`;
+            }
+            
+            // Redirigir
+            window.location.href = targetUrl;
+        }
+
+        // Inicializar cuando se carga la página
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(initApp, 500);
+        });
+    </script>
+</body>
+</html>

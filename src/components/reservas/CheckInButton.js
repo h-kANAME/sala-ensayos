@@ -18,17 +18,20 @@ const CheckInButton = ({ reserva, onCheckInSuccess }) => {
             const result = await reservasService.registrarCheckIn(reserva.id);
             console.log('Check-in result:', result);
             
-            if (result.success) {
+            // La respuesta viene wrapped en {data: {success: true, message: ...}}
+            const responseData = result.data || result;
+            
+            if (responseData.success) {
                 alert('✅ Check-in registrado exitosamente');
-                // Actualizar el estado local inmediatamente
-                reserva.estado_actual = 'PRESENTE';
-                reserva.hora_ingreso = new Date().toISOString().slice(0, 19).replace('T', ' ');
                 
+                // Recargar datos del servidor inmediatamente (no mutar objeto local)
+                console.log('Ejecutando onCheckInSuccess para recargar datos...');
                 if (onCheckInSuccess) {
-                    onCheckInSuccess();
+                    await onCheckInSuccess();
+                    console.log('onCheckInSuccess completado');
                 }
             } else {
-                setError(result.message);
+                setError(responseData.message);
             }
         } catch (err) {
             console.error('Error en check-in:', err);
@@ -50,17 +53,20 @@ const CheckInButton = ({ reserva, onCheckInSuccess }) => {
             const result = await reservasService.registrarCheckOut(reserva.id);
             console.log('Check-out result:', result);
             
-            if (result.success) {
+            // La respuesta viene wrapped en {data: {success: true, message: ...}}
+            const responseData = result.data || result;
+            
+            if (responseData.success) {
                 alert('✅ Check-out registrado exitosamente');
-                // Actualizar el estado local inmediatamente
-                reserva.estado_actual = 'FINALIZADA';
-                reserva.hora_salida = new Date().toISOString().slice(0, 19).replace('T', ' ');
                 
+                // Recargar datos del servidor inmediatamente (no mutar objeto local)
+                console.log('Ejecutando onCheckInSuccess para recargar datos...');
                 if (onCheckInSuccess) {
-                    onCheckInSuccess();
+                    await onCheckInSuccess();
+                    console.log('onCheckInSuccess completado');
                 }
             } else {
-                setError(result.message);
+                setError(responseData.message);
             }
         } catch (err) {
             console.error('Error en check-out:', err);

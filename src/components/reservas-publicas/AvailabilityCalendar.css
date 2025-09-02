@@ -1,0 +1,322 @@
+.availability-calendar {
+  padding: 20px 0;
+}
+
+.calendar-header h2 {
+  color: #333;
+  margin-bottom: 10px;
+  font-size: 1.8rem;
+}
+
+.selected-band {
+  background: #e3f2fd;
+  padding: 12px 16px;
+  border-radius: 8px;
+  color: #1976d2;
+  margin-bottom: 30px;
+  border-left: 4px solid #2196f3;
+}
+
+.calendar-content {
+  margin-bottom: 30px;
+}
+
+/* Selector de Sala */
+.sala-selector {
+  margin-bottom: 30px;
+}
+
+.sala-selector h3 {
+  color: #333;
+  margin-bottom: 15px;
+  font-size: 1.4rem;
+}
+
+.salas-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 15px;
+}
+
+.sala-card {
+  border: 2px solid #e9ecef;
+  border-radius: 12px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: white;
+}
+
+.sala-card:hover {
+  border-color: #667eea;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.sala-card.selected {
+  border-color: #667eea;
+  background: #f8f9ff;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+}
+
+.sala-card h4 {
+  color: #333;
+  margin-bottom: 8px;
+  font-size: 1.3rem;
+}
+
+.sala-description {
+  color: #666;
+  margin-bottom: 15px;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+.sala-details {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.capacity, .price {
+  font-size: 0.9rem;
+  color: #555;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.equipment {
+  font-size: 0.85rem;
+  color: #777;
+  margin: 0;
+  line-height: 1.3;
+}
+
+/* Selector de Fecha */
+.date-selector {
+  margin-bottom: 30px;
+}
+
+.date-selector h3 {
+  color: #333;
+  margin-bottom: 15px;
+  font-size: 1.4rem;
+}
+
+.dates-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 10px;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.date-button {
+  background: white;
+  border: 2px solid #e9ecef;
+  border-radius: 10px;
+  padding: 12px 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: center;
+  min-width: 70px;
+}
+
+.date-button:hover {
+  border-color: #667eea;
+  background: #f8f9ff;
+}
+
+.date-button.selected {
+  border-color: #667eea;
+  background: #667eea;
+  color: white;
+}
+
+.date-day {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  opacity: 0.8;
+  margin-bottom: 2px;
+}
+
+.date-number {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-bottom: 2px;
+}
+
+.date-month {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+
+/* Time Slots */
+.time-slots {
+  margin-bottom: 20px;
+}
+
+.time-slots h3 {
+  color: #333;
+  margin-bottom: 10px;
+  font-size: 1.4rem;
+}
+
+.selected-info {
+  background: #f8f9fa;
+  padding: 12px 16px;
+  border-radius: 8px;
+  color: #495057;
+  margin-bottom: 20px;
+  border-left: 4px solid #667eea;
+}
+
+.loading-slots {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+}
+
+.loading-slots .loading-spinner {
+  width: 30px;
+  height: 30px;
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #667eea;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 15px;
+}
+
+.slots-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 10px;
+}
+
+.time-slot-button {
+  background: white;
+  border: 2px solid #e9ecef;
+  border-radius: 10px;
+  padding: 15px 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: center;
+}
+
+.time-slot-button:hover:not(:disabled) {
+  border-color: #667eea;
+  background: #f8f9ff;
+  transform: translateY(-2px);
+}
+
+.time-slot-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.slot-time {
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 5px;
+  font-size: 1rem;
+}
+
+.slot-price {
+  color: #667eea;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.no-slots {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 40px;
+  color: #666;
+}
+
+.no-slots-icon {
+  font-size: 3rem;
+  margin-bottom: 15px;
+}
+
+.no-slots p {
+  margin: 8px 0;
+}
+
+.no-slots-hint {
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+
+/* Actions */
+.calendar-actions {
+  display: flex;
+  justify-content: flex-start;
+  padding-top: 20px;
+  border-top: 1px solid #e9ecef;
+  margin-top: 30px;
+}
+
+.error-message {
+  display: flex;
+  align-items: center;
+  background: #f8d7da;
+  border: 1px solid #f5c6cb;
+  color: #721c24;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin: 10px 0;
+}
+
+.error-icon {
+  margin-right: 10px;
+  font-size: 1.2rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .availability-calendar {
+    padding: 15px 0;
+  }
+  
+  .calendar-header h2 {
+    font-size: 1.5rem;
+  }
+  
+  .salas-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .dates-grid {
+    grid-template-columns: repeat(auto-fill, minmax(65px, 1fr));
+    gap: 8px;
+  }
+  
+  .date-button {
+    padding: 10px 6px;
+    min-width: 60px;
+  }
+  
+  .slots-grid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  }
+  
+  .time-slot-button {
+    padding: 12px 8px;
+  }
+  
+  .slot-time {
+    font-size: 0.9rem;
+  }
+  
+  .slot-price {
+    font-size: 0.8rem;
+  }
+}

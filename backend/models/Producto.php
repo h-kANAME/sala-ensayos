@@ -19,7 +19,7 @@ class Producto {
 
     // Obtener todos los productos
     public function obtenerTodos() {
-        $query = "SELECT id, nombre, descripcion, categoria, precio, stock, stock_minimo, activo 
+        $query = "SELECT id, nombre, descripcion, categoria, precio, stock, stock_minimo, activo, fecha_creacion 
                   FROM " . $this->table_name . " 
                   ORDER BY nombre ASC";
         
@@ -31,7 +31,7 @@ class Producto {
 
     // Obtener productos activos
     public function obtenerActivos() {
-        $query = "SELECT id, nombre, descripcion, categoria, precio, stock, stock_minimo, activo 
+        $query = "SELECT id, nombre, descripcion, categoria, precio, stock, stock_minimo, activo, fecha_creacion 
                   FROM " . $this->table_name . " 
                   WHERE activo = 1
                   ORDER BY nombre ASC";
@@ -44,7 +44,7 @@ class Producto {
 
     // Obtener un producto por ID
     public function obtenerPorId($id) {
-        $query = "SELECT id, nombre, descripcion, categoria, precio, stock, stock_minimo, activo 
+        $query = "SELECT id, nombre, descripcion, categoria, precio, stock, stock_minimo, activo, fecha_creacion 
                   FROM " . $this->table_name . " 
                   WHERE id = :id";
         
@@ -151,7 +151,7 @@ class Producto {
 
     // Buscar productos por nombre
     public function buscarPorNombre($termino) {
-        $query = "SELECT id, nombre, descripcion, categoria, precio, stock, stock_minimo, activo 
+        $query = "SELECT id, nombre, descripcion, categoria, precio, stock, stock_minimo, activo, fecha_creacion 
                   FROM " . $this->table_name . " 
                   WHERE nombre LIKE :termino AND activo = 1
                   ORDER BY nombre ASC";

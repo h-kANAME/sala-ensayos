@@ -13,6 +13,20 @@ const ListaProductos = () => {
 
     useEffect(() => {
         cargarProductos();
+        
+        // Recargar productos cuando la página se vuelve visible
+        const handleVisibilityChange = () => {
+            if (!document.hidden) {
+                cargarProductos();
+            }
+        };
+        
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        
+        // Cleanup
+        return () => {
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+        };
     }, []);
 
     const cargarProductos = async () => {

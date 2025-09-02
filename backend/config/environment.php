@@ -160,6 +160,12 @@ class Environment {
      * Establece headers CORS dinámicamente
      */
     public static function setCorsHeaders() {
+        // Verificar si los headers ya fueron enviados
+        if (headers_sent()) {
+            error_log("WARNING: Headers ya enviados, no se pueden configurar CORS");
+            return;
+        }
+        
         $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
         $allowedOrigins = self::getAllowedOrigins();
         

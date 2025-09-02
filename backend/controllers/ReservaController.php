@@ -31,6 +31,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     } else if (isset($_GET['id'])) {
         // Obtener reserva por ID
         $stmt = $reserva->obtenerPorId($_GET['id']);
+    } else if (isset($_GET['sala_id']) && isset($_GET['fecha']) && 
+              isset($_GET['hora_inicio']) && isset($_GET['hora_fin']) && 
+              strpos($_SERVER['REQUEST_URI'], 'disponibilidad') !== false) {
+        // Verificar disponibilidad
+        $disponible = $reserva->verificarDisponibilidad(
+            $_GET['sala_id'],
+            $_GET['fecha'],
+            $_GET['hora_inicio'],
+            $_GET['hora_fin'],
+            $_GET['excluir_id'] ?? null
+        );
+
+        http_response_code(200);
+        echo json_encode(['disponible' => $disponible]);
+        exit();
+    } else if (isset($_GET['cliente_id']) && isset($_GET['fecha']) && 
+              isset($_GET['hora_inicio']) && isset($_GET['hora_fin']) && 
+              strpos($_SERVER['REQUEST_URI'], 'verificar-banda') !== false) {
+        // Verificar conflicto de banda
+        $conflictoBanda = $reserva->verificarConflictoBanda(
+            $_GET['cliente_id'],
+            $_GET['fecha'],
+            $_GET['hora_inicio'],
+            $_GET['hora_fin'],
+            $_GET['excluir_id'] ?? null
+        );
+
+        http_response_code(200);
+        echo json_encode($conflictoBanda);
+        exit();
     } else {
         // Obtener todas las reservas
         error_log("Obteniendo TODAS las reservas");
@@ -62,8 +92,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             "horas_reservadas" => (int)$row['horas_reservadas'],
             "estado" => $row['estado'],
             "estado_actual" => $row['estado_actual'],
-            "hora_ingreso" => $row['hora_ingreso'],
-            "hora_salida" => $row['hora_salida'],
+            "hora_ingreso" => $row['hora_ingreso'] ?? null,
+            "hora_salida" => $row['hora_salida'] ?? null,
             "importe_total" => (float)$row['importe_total'],
             "notas" => $row['notas'],
             "fecha_creacion" => $row['fecha_creacion']
@@ -132,7 +162,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         !empty($data->hora_inicio) &&
         !empty($data->hora_fin)
     ) {
-        // Verificar disponibilidad
+        // Verificar disponibilidad de la sala
         $disponible = $reserva->verificarDisponibilidad(
             $data->sala_id,
             $data->fecha_reserva,
@@ -140,11 +170,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $data->hora_fin
         );
 
-        error_log("Disponibilidad: " . ($disponible ? "SÍ" : "NO"));
+        error_log("Disponibilidad de sala: " . ($disponible ? "SÍ" : "NO"));
 
         if (!$disponible) {
             http_response_code(400);
             echo json_encode(array("message" => "La sala no está disponible en ese horario"));
+            exit;
+        }
+
+        // Verificar conflicto de horarios para la misma banda
+        $conflictoBanda = $reserva->verificarConflictoBanda(
+            $data->cliente_id,
+            $data->fecha_reserva,
+            $data->hora_inicio,
+            $data->hora_fin
+        );
+
+        if (!$conflictoBanda['sin_conflicto']) {
+            http_response_code(400);
+            echo json_encode(array("message" => "Esta banda ya tiene una reserva en ese horario: " . $conflictoBanda['reservas_conflicto']));
             exit;
         }
 
@@ -238,7 +282,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
     // Obtener ID de la URL (formato REST: /reservas/123)
     $uri = $_SERVER['REQUEST_URI'];
     $path = parse_url($uri, PHP_URL_PATH);
-    $path = str_replace('/public/api', '', $path);
+    // Remover prefijos dependiendo del entorno
+    $path = str_replace('/public/api', '', $path);        // Para desarrollo local
+    $path = str_replace('/sala-ensayos/api', '', $path);  // Para producción
     $segments = explode('/', trim($path, '/'));
     
     // El ID debería estar en el segundo segmento: ['reservas', '123']
@@ -254,6 +300,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
     
     if (!empty($data->cliente_id) && !empty($data->sala_id) && !empty($data->fecha_reserva) && 
         !empty($data->hora_inicio) && !empty($data->hora_fin)) {
+        
+        // Verificar disponibilidad de la sala (excluyendo la reserva actual)
+        $disponible = $reserva->verificarDisponibilidad(
+            $data->sala_id,
+            $data->fecha_reserva,
+            $data->hora_inicio,
+            $data->hora_fin,
+            $id // Excluir la reserva actual
+        );
+
+        error_log("Disponibilidad de sala para actualización: " . ($disponible ? "SÍ" : "NO"));
+
+        if (!$disponible) {
+            http_response_code(400);
+            echo json_encode(array("message" => "La sala no está disponible en ese horario"));
+            exit;
+        }
+
+        // Verificar conflicto de horarios para la misma banda (excluyendo la reserva actual)
+        $conflictoBanda = $reserva->verificarConflictoBanda(
+            $data->cliente_id,
+            $data->fecha_reserva,
+            $data->hora_inicio,
+            $data->hora_fin,
+            $id // Excluir la reserva actual
+        );
+
+        if (!$conflictoBanda['sin_conflicto']) {
+            http_response_code(400);
+            echo json_encode(array("message" => "Esta banda ya tiene una reserva en ese horario: " . $conflictoBanda['reservas_conflicto']));
+            exit;
+        }
         
         // Calcular horas reservadas e importe
         $hora_inicio_obj = new DateTime($data->fecha_reserva . ' ' . $data->hora_inicio);
@@ -322,7 +400,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
     // Obtener ID de la URL (formato REST: /reservas/123)
     $uri = $_SERVER['REQUEST_URI'];
     $path = parse_url($uri, PHP_URL_PATH);
-    $path = str_replace('/public/api', '', $path);
+    // Remover prefijos dependiendo del entorno
+    $path = str_replace('/public/api', '', $path);        // Para desarrollo local
+    $path = str_replace('/sala-ensayos/api', '', $path);  // Para producción
     $segments = explode('/', trim($path, '/'));
     
     // El ID debería estar en el segundo segmento: ['reservas', '123']

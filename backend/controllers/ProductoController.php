@@ -13,8 +13,17 @@ include_once __DIR__ . '/../models/Producto.php';
 // Analizar la URL para extraer el ID si existe
 $uri = $_SERVER['REQUEST_URI'];
 $path = parse_url($uri, PHP_URL_PATH);
-$path = str_replace('/public/api', '', $path);
+
+// Remover prefijos dependiendo del entorno
+$path = str_replace('/public/api', '', $path);        // Para desarrollo local
+$path = str_replace('/sala-ensayos/api', '', $path);  // Para producción
+
 $segments = explode('/', trim($path, '/'));
+
+// DEBUG: URL parsing para productos
+error_log('ProductoController DEBUG - URI: ' . $uri);
+error_log('ProductoController DEBUG - Path limpio: ' . $path);
+error_log('ProductoController DEBUG - Segments: ' . print_r($segments, true));
 
 // Extraer ID si está presente en la URL
 $id = null;
@@ -30,6 +39,10 @@ if (isset($segments[1]) && is_numeric($segments[1])) {
 } elseif (isset($segments[1]) && $segments[1] === 'buscar') {
     $action = 'buscar';
 }
+
+// DEBUG: Valores finales
+error_log('ProductoController DEBUG - Action: ' . ($action ?? 'NULL'));
+error_log('ProductoController DEBUG - ID: ' . ($id ?? 'NULL'));
 
 $database = new Database();
 $db = $database->getConnection();
@@ -73,6 +86,9 @@ switch ($_SERVER['REQUEST_METHOD']) {
             }
             
         } elseif ($id) {
+            // DEBUG: Obtener producto por ID
+            error_log('ProductoController GET BY ID - ID recibido: ' . $id);
+            
             // Obtener producto específico por ID
             try {
                 $stmt = $producto->obtenerPorId($id);

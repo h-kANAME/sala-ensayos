@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test API Endpoints</title>
+</head>
+<body>
+    <h1>Test de API Endpoints</h1>
+    <div id="results"></div>
+    
+    <script>
+        async function testAPI() {
+            const results = document.getElementById('results');
+            results.innerHTML = '<p>Probando endpoints...</p>';
+            
+            const hostname = window.location.hostname;
+            const path = window.location.pathname;
+            
+            console.log('Hostname:', hostname, 'Path:', path);
+            
+            let baseUrl = '/api/public-reservas';
+            
+            // Docker desarrollo (localhost:8080)
+            if (hostname === 'localhost' && window.location.port === '8080') {
+                baseUrl = '/public/api/public-reservas';
+            }
+            // Producción o XAMPP con ruta completa
+            else if (hostname === 'kyz.com.ar' || path.includes('/sala-ensayos/')) {
+                baseUrl = '/sala-ensayos/api/public-reservas';
+            }
+            
+            console.log('Base URL:', baseUrl);
+            
+            const tests = [
+                { name: 'Salas', url: `${baseUrl}/salas` },
+                { name: 'Search Bands', url: `${baseUrl}/search-bands?q=test` },
+                { name: 'Availability', url: `${baseUrl}/availability?sala_id=1&fecha=2025-08-28` }
+            ];
+            
+            let html = `<h2>Base URL: ${baseUrl}</h2><ul>`;
+            
+            for (const test of tests) {
+                try {
+                    console.log(`Testing: ${test.url}`);
+                    const response = await fetch(test.url);
+                    const data = await response.text();
+                    
+                    html += `<li><strong>${test.name}</strong>: 
+                             Status ${response.status} 
+                             <br><small>${test.url}</small>
+                             <br><pre>${data.substring(0, 200)}...</pre></li>`;
+                } catch (error) {
+                    html += `<li><strong>${test.name}</strong>: ERROR - ${error.message}</li>`;
+                }
+            }
+            
+            html += '</ul>';
+            results.innerHTML = html;
+        }
+        
+        // Auto-run
+        testAPI();
+    </script>
+</body>
+</html>

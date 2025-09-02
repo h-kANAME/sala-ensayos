@@ -15,6 +15,10 @@ class Reserva
     public $estado;
     public $importe_total;
     public $notas;
+    public $codigo_verificacion;
+    public $intentos_verificacion;
+    public $fecha_expiracion_codigo;
+    public $estado_verificacion;
     public $hora_ingreso;
     public $hora_salida;
     public $estado_actual;
@@ -198,6 +202,62 @@ class Reserva
         error_log("=== FIN VERIFICACIÓN DISPONIBILIDAD ===");
 
         return $disponible;
+    }
+
+    // Verificar que una banda no tenga conflicto de horarios con sus propias reservas
+    public function verificarConflictoBanda($cliente_id, $fecha, $hora_inicio, $hora_fin, $reserva_id = null)
+    {
+        error_log("=== VERIFICANDO CONFLICTO DE BANDA ===");
+        error_log("Cliente ID: $cliente_id");
+        error_log("Fecha: $fecha");
+        error_log("Hora inicio: $hora_inicio");
+        error_log("Hora fin: $hora_fin");
+        error_log("Reserva ID a excluir: " . ($reserva_id ?: 'ninguna'));
+
+        // Buscar reservas activas de la misma banda que se superpongan en horario
+        $query = "SELECT COALESCE(COUNT(r.id), 0) as count, 
+                         COALESCE(GROUP_CONCAT(CONCAT('Sala ', s.nombre, ' (', r.hora_inicio, '-', r.hora_fin, ')') SEPARATOR ', '), '') as reservas_conflicto
+                  FROM " . $this->table_name . " r
+                  LEFT JOIN salas s ON r.sala_id = s.id
+                  WHERE r.cliente_id = :cliente_id 
+                  AND DATE(r.fecha_reserva) = :fecha
+                  AND r.estado IN ('confirmada', 'pendiente')
+                  AND r.estado_verificacion IN ('verificado', 'pendiente')
+                  AND (
+                    (r.hora_inicio < :hora_fin AND r.hora_fin > :hora_inicio)
+                  )";
+        
+        // Si estamos editando una reserva existente, excluirla de la validación
+        if ($reserva_id) {
+            $query .= " AND r.id != :reserva_id";
+        }
+
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(":cliente_id", $cliente_id);
+        $stmt->bindParam(":fecha", $fecha);
+        $stmt->bindParam(":hora_inicio", $hora_inicio);
+        $stmt->bindParam(":hora_fin", $hora_fin);
+        
+        if ($reserva_id) {
+            $stmt->bindParam(":reserva_id", $reserva_id);
+        }
+        
+        $stmt->execute();
+
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        $sinConflicto = ($row['count'] ?? 0) == 0;
+        
+        error_log("Conflictos de banda encontrados: " . $row['count']);
+        if (!$sinConflicto) {
+            error_log("Reservas en conflicto: " . $row['reservas_conflicto']);
+        }
+        error_log("Sin conflicto: " . ($sinConflicto ? 'SÍ' : 'NO'));
+        error_log("=== FIN VERIFICACIÓN CONFLICTO DE BANDA ===");
+
+        return [
+            'sin_conflicto' => $sinConflicto,
+            'reservas_conflicto' => $row['reservas_conflicto'] ?: 'Sin detalles de conflicto'
+        ];
     }
 
     // Obtener una reserva por ID
@@ -445,6 +505,194 @@ class Reserva
         error_log("Reservas marcadas como ausente: " . $reservasAfectadas);
         
         return true;
+    }
+
+    // Métodos para el sistema de verificación por email
+
+    // Generar código de verificación
+    public function generarCodigoVerificacion()
+    {
+        return sprintf('%06d', mt_rand(100000, 999999));
+    }
+
+    // Iniciar proceso de verificación (para reservas públicas)
+    public function iniciarVerificacion($cliente_id, $sala_id, $fecha_reserva, $hora_inicio, $hora_fin, $horas_reservadas, $importe_total)
+    {
+        error_log("=== INICIANDO PROCESO DE VERIFICACIÓN ===");
+        
+        // Generar código de verificación
+        $codigo = $this->generarCodigoVerificacion();
+        $expiracion = date('Y-m-d H:i:s', strtotime('+15 minutes'));
+        
+        $query = "INSERT INTO " . $this->table_name . "
+                 SET cliente_id=:cliente_id, sala_id=:sala_id, usuario_id=NULL,
+                     fecha_reserva=:fecha_reserva, hora_inicio=:hora_inicio, hora_fin=:hora_fin,
+                     horas_reservadas=:horas_reservadas, estado='pendiente', estado_actual='pendiente',
+                     importe_total=:importe_total, codigo_verificacion=:codigo,
+                     fecha_expiracion_codigo=:expiracion, estado_verificacion='pendiente',
+                     intentos_verificacion=0, notas='Reserva validada por agenda pública'";
+
+        $stmt = $this->conn->prepare($query);
+        
+        if (!$stmt) {
+            error_log("ERROR: No se pudo preparar la query de verificación");
+            return false;
+        }
+
+        $stmt->bindParam(":cliente_id", $cliente_id);
+        $stmt->bindParam(":sala_id", $sala_id);
+        $stmt->bindParam(":fecha_reserva", $fecha_reserva);
+        $stmt->bindParam(":hora_inicio", $hora_inicio);
+        $stmt->bindParam(":hora_fin", $hora_fin);
+        $stmt->bindParam(":horas_reservadas", $horas_reservadas);
+        $stmt->bindParam(":importe_total", $importe_total);
+        $stmt->bindParam(":codigo", $codigo);
+        $stmt->bindParam(":expiracion", $expiracion);
+
+        try {
+            $result = $stmt->execute();
+            if ($result) {
+                $reserva_id = $this->conn->lastInsertId();
+                error_log("✓ Proceso de verificación iniciado para reserva ID: " . $reserva_id);
+                return [
+                    'reserva_id' => $reserva_id,
+                    'codigo_verificacion' => $codigo,
+                    'fecha_expiracion' => $expiracion
+                ];
+            }
+        } catch (Exception $e) {
+            error_log("Exception al iniciar verificación: " . $e->getMessage());
+        }
+        
+        return false;
+    }
+
+    // Verificar código de verificación
+    public function verificarCodigo($reserva_id, $codigo_ingresado)
+    {
+        error_log("=== VERIFICANDO CÓDIGO ===");
+        error_log("Reserva ID: $reserva_id, Código: $codigo_ingresado");
+        
+        // Obtener información de la reserva
+        $query = "SELECT codigo_verificacion, intentos_verificacion, fecha_expiracion_codigo, estado_verificacion 
+                  FROM " . $this->table_name . " 
+                  WHERE id = :reserva_id";
+                  
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(":reserva_id", $reserva_id);
+        $stmt->execute();
+        
+        if ($stmt->rowCount() == 0) {
+            error_log("ERROR: Reserva no encontrada");
+            return ['success' => false, 'message' => 'Reserva no encontrada'];
+        }
+        
+        $reserva = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        // Verificar si ya está verificado
+        if ($reserva['estado_verificacion'] === 'verificado') {
+            error_log("Reserva ya verificada");
+            return ['success' => false, 'message' => 'La reserva ya ha sido verificada'];
+        }
+        
+        // Verificar si está bloqueado por intentos
+        if ($reserva['estado_verificacion'] === 'bloqueado') {
+            error_log("Reserva bloqueada por intentos fallidos");
+            return ['success' => false, 'message' => 'Reserva bloqueada por múltiples intentos fallidos'];
+        }
+        
+        // Verificar si el código ha expirado
+        if (strtotime($reserva['fecha_expiracion_codigo']) < time()) {
+            error_log("Código expirado");
+            $this->marcarComoExpirado($reserva_id);
+            return ['success' => false, 'message' => 'El código de verificación ha expirado'];
+        }
+        
+        // Verificar el código
+        if ($reserva['codigo_verificacion'] === $codigo_ingresado) {
+            error_log("✓ Código verificado correctamente");
+            $this->confirmarVerificacion($reserva_id);
+            return ['success' => true, 'message' => 'Código verificado correctamente. Reserva confirmada.'];
+        } else {
+            error_log("✗ Código incorrecto");
+            $intentos = $reserva['intentos_verificacion'] + 1;
+            
+            if ($intentos >= 3) {
+                $this->bloquearReserva($reserva_id);
+                return ['success' => false, 'message' => 'Código incorrecto. Reserva bloqueada por múltiples intentos fallidos.'];
+            } else {
+                $this->incrementarIntentos($reserva_id);
+                return ['success' => false, 'message' => "Código incorrecto. Intentos restantes: " . (3 - $intentos)];
+            }
+        }
+    }
+
+    // Confirmar verificación y activar reserva
+    private function confirmarVerificacion($reserva_id)
+    {
+        $query = "UPDATE " . $this->table_name . " 
+                  SET estado_verificacion = 'verificado', estado = 'confirmada' 
+                  WHERE id = :reserva_id";
+                  
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(":reserva_id", $reserva_id);
+        return $stmt->execute();
+    }
+
+    // Incrementar contador de intentos
+    private function incrementarIntentos($reserva_id)
+    {
+        $query = "UPDATE " . $this->table_name . " 
+                  SET intentos_verificacion = intentos_verificacion + 1 
+                  WHERE id = :reserva_id";
+                  
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(":reserva_id", $reserva_id);
+        return $stmt->execute();
+    }
+
+    // Bloquear reserva por intentos fallidos
+    private function bloquearReserva($reserva_id)
+    {
+        $query = "UPDATE " . $this->table_name . " 
+                  SET estado_verificacion = 'bloqueado', estado = 'cancelada' 
+                  WHERE id = :reserva_id";
+                  
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(":reserva_id", $reserva_id);
+        return $stmt->execute();
+    }
+
+    // Marcar código como expirado
+    private function marcarComoExpirado($reserva_id)
+    {
+        $query = "UPDATE " . $this->table_name . " 
+                  SET estado_verificacion = 'expirado', estado = 'cancelada' 
+                  WHERE id = :reserva_id";
+                  
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(":reserva_id", $reserva_id);
+        return $stmt->execute();
+    }
+
+    // Buscar bandas por nombre para autocompletado
+    public function buscarBandas($termino)
+    {
+        $query = "SELECT id, nombre_banda, contacto_email 
+                  FROM clientes 
+                  WHERE activo = 1 
+                  AND nombre_banda LIKE :termino 
+                  AND contacto_email IS NOT NULL 
+                  AND contacto_email != ''
+                  ORDER BY nombre_banda ASC 
+                  LIMIT 10";
+                  
+        $stmt = $this->conn->prepare($query);
+        $termino_like = "%{$termino}%";
+        $stmt->bindParam(":termino", $termino_like);
+        $stmt->execute();
+        
+        return $stmt;
     }
 }
 ?>

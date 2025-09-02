@@ -12,6 +12,7 @@ import ProductoEditar from './pages/ProductoEditar';
 import Ventas from './pages/Ventas';
 import VentaNueva from './pages/VentaNueva';
 import VentaEditar from './pages/VentaEditar';
+import ReservasPublicas from './pages/ReservasPublicas';
 import Loading from './components/common/Loading';
 import './App.css';
 
@@ -47,6 +48,9 @@ function AppContent() {
             <Login />
           </PublicRoute>
         } />
+        
+        {/* Ruta pública para reservas - sin autenticación */}
+        <Route path="/reservas" element={<ReservasPublicas />} />
 
         {/* Rutas protegidas - Cada página incluye Layout internamente */}
         <Route path="/dashboard" element={

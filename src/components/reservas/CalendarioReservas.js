@@ -19,16 +19,8 @@ const CalendarioReservas = () => {
 
     // Función para determinar en qué día debe aparecer una reserva según la hora
     const calcularDiaVisualizacion = (fechaReserva, horaInicio) => {
-        const [horas] = horaInicio.split(':').map(Number);
-        
-        // Si la hora de inicio es entre 00:00 y 05:59, la reserva se visualiza en el día anterior
-        // Esto corrige que una reserva guardada el 22/08 (00:30-01:30) aparezca el 21/08
-        if (horas >= 0 && horas < 6) {
-            const fecha = new Date(fechaReserva + 'T00:00:00');
-            fecha.setDate(fecha.getDate() - 1);
-            return fecha.toISOString().split('T')[0];
-        }
-        
+        // SIMPLIFICADO: La reserva siempre aparece en el día que corresponde a fecha_reserva
+        // Una reserva del 27/08 a las 01:00 aparece el 27/08, no el 26/08
         return fechaReserva;
     };
 

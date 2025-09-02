@@ -23,7 +23,7 @@ if (file_exists('../../backend/config/environment.php')) {
                     ['https://kyz.com.ar', 'https://www.kyz.com.ar'] : 
                     ['http://localhost:3000', 'http://127.0.0.1:3000'],
                 'database' => [
-                    'host' => $isProduction ? 'localhost' : 'mysql',
+                    'host' => 'localhost',
                     'database' => $isProduction ? 'kyzcomar_sala-ensayos' : 'sala_ensayos',
                     'username' => $isProduction ? 'kyzcomar_user-sala' : 'sala_user',
                     'password' => $isProduction ? 'salapassword' : 'salapassword'
@@ -94,27 +94,38 @@ function resolveBackendPath($relativePath) {
         $relativePath                      // Directo
     ];
     
+    $currentDir = __DIR__;
+    error_log("resolveBackendPath - Directorio actual: " . $currentDir);
+    error_log("resolveBackendPath - Buscando: " . $relativePath);
+    
     foreach ($possiblePaths as $path) {
+        $absolutePath = realpath($path);
+        error_log("Verificando ruta: $path -> " . ($absolutePath ? $absolutePath : 'NO EXISTE'));
+        
         if (file_exists($path)) {
+            error_log("✓ Archivo encontrado en: " . $path);
             return $path;
         }
     }
     
     // Si no encuentra el archivo, throw error with debug info
-    $currentDir = __DIR__;
     $checkedPaths = implode(', ', $possiblePaths);
-    throw new Exception("No se pudo encontrar: $relativePath. Directorio actual: $currentDir. Rutas verificadas: $checkedPaths");
+    $errorMsg = "No se pudo encontrar: $relativePath. Directorio actual: $currentDir. Rutas verificadas: $checkedPaths";
+    error_log("ERROR: " . $errorMsg);
+    throw new Exception($errorMsg);
 }
 
-// Configurar CORS dinámicamente
+// Logging TEMPORAL - siempre logear (ANTES de headers)
+error_log("=== API INDEX.PHP LLAMADO ===");
+error_log("REQUEST_URI: " . $_SERVER['REQUEST_URI']);
+error_log("REQUEST_METHOD: " . $_SERVER['REQUEST_METHOD']);
+error_log("PATH_INFO: " . ($_SERVER['PATH_INFO'] ?? 'No definido'));
+error_log("Environment: " . Environment::get('environment'));
+
+// Configurar CORS dinámicamente (DESPUÉS del logging)
 Environment::setCorsHeaders();
 
-// Logging solo en desarrollo
 if (Environment::isDevelopment()) {
-    error_log("=== API INDEX.PHP LLAMADO ===");
-    error_log("REQUEST_URI: " . $_SERVER['REQUEST_URI']);
-    error_log("REQUEST_METHOD: " . $_SERVER['REQUEST_METHOD']);
-    error_log("PATH_INFO: " . ($_SERVER['PATH_INFO'] ?? 'No definido'));
     error_log("Environment: " . Environment::get('environment'));
 }
 
@@ -128,7 +139,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 $request = $_SERVER['REQUEST_URI'];
 $path = parse_url($request, PHP_URL_PATH);
 
-if (Environment::isDevelopment()) error_log("Path parseado: " . $path);
+error_log("Path parseado: " . $path);
 
 // Limpiar path - remover diferentes prefijos según el entorno
 $path = str_replace('/public/api', '', $path);  // Desarrollo
@@ -136,10 +147,48 @@ $path = str_replace('/sala-ensayos/api', '', $path);  // Producción
 $path = preg_replace('#^/[^/]+/api#', '', $path);  // Cualquier subdirectorio/api
 $path = trim($path, '/');
 
-if (Environment::isDevelopment()) error_log("Path limpio: " . $path);
+error_log("Path limpio: " . $path);
 
-// Routing básico
+// Routing básico - TEMPORAL: logear cada caso
+error_log("Evaluando routing para path: '$path'");
+error_log("¿strpos(\$path, 'reservas') === 0? " . (strpos($path, 'reservas') === 0 ? 'SI' : 'NO'));
+error_log("¿strpos(\$path, 'public-reservas') === 0? " . (strpos($path, 'public-reservas') === 0 ? 'SI' : 'NO'));
+
 switch(true) {
+    case strpos($path, 'public-reservas') === 0:
+        error_log("=== PUBLIC-RESERVAS ENDPOINT ===");
+        error_log("Redirigiendo a ReservaPublicaController");
+        error_log("Current directory: " . __DIR__);
+        error_log("Path limpio: " . $path);
+        
+        try {
+            $controllerPath = resolveBackendPath('controllers/ReservaPublicaController.php');
+            error_log("Ruta del controlador resuelto: " . $controllerPath);
+            
+            if (!file_exists($controllerPath)) {
+                error_log("ERROR: ReservaPublicaController.php no existe en: " . $controllerPath);
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Controlador no encontrado']);
+                break;
+            }
+            
+            include_once $controllerPath;
+        } catch (Exception $e) {
+            error_log("Exception en public-reservas: " . $e->getMessage());
+            error_log("Stack trace: " . $e->getTraceAsString());
+            http_response_code(500);
+            // TEMPORAL: Mostrar error completo para debugging
+            echo json_encode([
+                'success' => false, 
+                'message' => 'Error del servidor en api/index.php', 
+                'debug_error' => $e->getMessage(),
+                'debug_file' => $e->getFile(),
+                'debug_line' => $e->getLine(),
+                'debug_trace' => explode("\n", $e->getTraceAsString())
+            ]);
+        }
+        break;
+        
     case strpos($path, 'reservas') === 0:
         if (Environment::isDevelopment()) error_log("Redirigiendo a ReservaController");
         try {

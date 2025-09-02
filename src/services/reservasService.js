@@ -85,6 +85,18 @@ export const reservasService = {
     return await api.get(url);
   },
 
+  // Verificar conflicto de banda
+  verificarConflictoBanda: async (clienteId, fecha, horaInicio, horaFin, excluirId = null) => {
+    console.log(`🔍 Verificando conflicto de banda - Cliente: ${clienteId}, Fecha: ${fecha}`);
+    
+    let url = `/reservas/verificar-banda?cliente_id=${clienteId}&fecha=${fecha}&hora_inicio=${horaInicio}&hora_fin=${horaFin}`;
+    if (excluirId) {
+      url += `&excluir_id=${excluirId}`;
+    }
+    
+    return await api.get(url);
+  },
+
   // Actualizar reserva
   actualizar: async (id, datosReserva) => {
     console.log(`✏️ Actualizando reserva ID: ${id}`);

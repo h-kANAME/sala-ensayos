@@ -25,7 +25,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     // Obtener ID de la URL si existe (formato REST: /salas/123)
     $uri = $_SERVER['REQUEST_URI'];
     $path = parse_url($uri, PHP_URL_PATH);
-    $path = str_replace('/public/api', '', $path);
+    // Remover prefijos dependiendo del entorno
+    $path = str_replace('/public/api', '', $path);        // Para desarrollo local
+    $path = str_replace('/sala-ensayos/api', '', $path);  // Para producción
     $segments = explode('/', trim($path, '/'));
     
     // El ID estaría en el segundo segmento: ['salas', '123']

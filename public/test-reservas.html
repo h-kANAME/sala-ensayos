@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test - Reservas</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        input, button { padding: 10px; margin: 5px; }
+        #result { margin: 20px 0; padding: 10px; background: #f0f0f0; }
+    </style>
+</head>
+<body>
+    <h1>Test Sistema de Reservas</h1>
+    
+    <div>
+        <h3>1. Test API Search Bands</h3>
+        <input type="text" id="searchTerm" placeholder="Buscar banda..." value="rock">
+        <button onclick="searchBands()">Buscar</button>
+    </div>
+    
+    <div>
+        <h3>2. Test API Salas</h3>
+        <button onclick="getSalas()">Obtener Salas</button>
+    </div>
+    
+    <div id="result"></div>
+
+    <script>
+        async function searchBands() {
+            const term = document.getElementById('searchTerm').value;
+            const resultDiv = document.getElementById('result');
+            
+            resultDiv.innerHTML = 'Buscando...';
+            
+            try {
+                console.log('Haciendo fetch a:', `/public/api/public-reservas/search-bands?q=${term}`);
+                const response = await fetch(`/public/api/public-reservas/search-bands?q=${encodeURIComponent(term)}`);
+                
+                console.log('Response status:', response.status);
+                console.log('Response headers:', response.headers);
+                
+                const text = await response.text();
+                console.log('Response text:', text);
+                
+                resultDiv.innerHTML = `<strong>Resultado:</strong><br><pre>${text}</pre>`;
+                
+            } catch (error) {
+                console.error('Error:', error);
+                resultDiv.innerHTML = `<strong>Error:</strong> ${error.message}`;
+            }
+        }
+        
+        async function getSalas() {
+            const resultDiv = document.getElementById('result');
+            
+            resultDiv.innerHTML = 'Obteniendo salas...';
+            
+            try {
+                console.log('Haciendo fetch a:', '/public/api/public-reservas/salas');
+                const response = await fetch('/public/api/public-reservas/salas');
+                
+                console.log('Response status:', response.status);
+                const text = await response.text();
+                console.log('Response text:', text);
+                
+                resultDiv.innerHTML = `<strong>Resultado:</strong><br><pre>${text}</pre>`;
+                
+            } catch (error) {
+                console.error('Error:', error);
+                resultDiv.innerHTML = `<strong>Error:</strong> ${error.message}`;
+            }
+        }
+        
+        // Test inicial
+        console.log('Página cargada. URLs a probar:');
+        console.log('- /public/api/public-reservas/search-bands?q=rock');
+        console.log('- /public/api/public-reservas/salas');
+    </script>
+</body>
+</html>

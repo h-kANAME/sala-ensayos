@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test API - Sistema de Reservas Públicas</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-section h3 {
+            color: #333;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+        }
+        .test-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-button:hover {
+            background: #0056b3;
+        }
+        .result {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 10px;
+            margin-top: 10px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .success {
+            border-color: #28a745;
+            background-color: #d4edda;
+        }
+        .error {
+            border-color: #dc3545;
+            background-color: #f8d7da;
+        }
+        input, select {
+            padding: 8px;
+            margin: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .status {
+            font-weight: bold;
+            padding: 5px 10px;
+            border-radius: 3px;
+            display: inline-block;
+            margin-left: 10px;
+        }
+        .status.success {
+            background: #28a745;
+            color: white;
+        }
+        .status.error {
+            background: #dc3545;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test API - Sistema de Reservas Públicas</h1>
+    <p>Esta página permite probar los endpoints de la API antes de usar el sistema completo.</p>
+
+    <!-- Test 1: Search Bands -->
+    <div class="test-section">
+        <h3>1. Búsqueda de Bandas</h3>
+        <p>Buscar bandas registradas con email válido.</p>
+        <input type="text" id="searchTerm" placeholder="Término de búsqueda (ej: rock, jazz)" value="test">
+        <button class="test-button" onclick="testSearchBands()">Buscar Bandas</button>
+        <div id="searchResult" class="result"></div>
+    </div>
+
+    <!-- Test 2: Get Salas -->
+    <div class="test-section">
+        <h3>2. Obtener Salas</h3>
+        <p>Listar salas disponibles para reservas.</p>
+        <button class="test-button" onclick="testGetSalas()">Obtener Salas</button>
+        <div id="salasResult" class="result"></div>
+    </div>
+
+    <!-- Test 3: Check Availability -->
+    <div class="test-section">
+        <h3>3. Verificar Disponibilidad</h3>
+        <p>Verificar horarios disponibles para una sala y fecha específica.</p>
+        <select id="salaId">
+            <option value="1">Sala 1</option>
+            <option value="2">Sala 2</option>
+        </select>
+        <input type="date" id="fecha" value="2025-08-27">
+        <button class="test-button" onclick="testCheckAvailability()">Verificar Disponibilidad</button>
+        <div id="availabilityResult" class="result"></div>
+    </div>
+
+    <!-- Test 4: Database Connection -->
+    <div class="test-section">
+        <h3>4. Conexión a Base de Datos</h3>
+        <p>Verificar que la base de datos esté configurada correctamente.</p>
+        <button class="test-button" onclick="testDbConnection()">Test DB Connection</button>
+        <div id="dbResult" class="result"></div>
+    </div>
+
+    <!-- Test Results Summary -->
+    <div class="test-section">
+        <h3>📊 Resumen de Tests</h3>
+        <div id="testSummary">
+            <p>Ejecuta los tests para ver el resumen.</p>
+        </div>
+        <button class="test-button" onclick="runAllTests()" style="background: #28a745;">
+            🚀 Ejecutar Todos los Tests
+        </button>
+    </div>
+
+    <script>
+        let testResults = {
+            searchBands: null,
+            getSalas: null,
+            checkAvailability: null,
+            dbConnection: null
+        };
+
+        async function makeApiCall(url, method = 'GET', body = null) {
+            try {
+                const options = {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                };
+                
+                if (body) {
+                    options.body = JSON.stringify(body);
+                }
+
+                console.log(`Making ${method} request to: ${url}`);
+                const response = await fetch(url, options);
+                
+                const result = {
+                    status: response.status,
+                    statusText: response.statusText,
+                    headers: Object.fromEntries([...response.headers.entries()]),
+                    data: null,
+                    error: null
+                };
+
+                try {
+                    result.data = await response.json();
+                } catch (e) {
+                    result.data = await response.text();
+                }
+
+                return result;
+            } catch (error) {
+                return {
+                    status: 0,
+                    statusText: 'Network Error',
+                    data: null,
+                    error: error.message
+                };
+            }
+        }
+
+        function displayResult(elementId, result, testName) {
+            const element = document.getElementById(elementId);
+            const isSuccess = result.status >= 200 && result.status < 300 && !result.error;
+            
+            element.className = `result ${isSuccess ? 'success' : 'error'}`;
+            element.innerHTML = `Status: ${result.status} ${result.statusText}
+${result.error ? `Error: ${result.error}` : ''}
+Response: ${JSON.stringify(result.data, null, 2)}`;
+
+            testResults[testName] = isSuccess;
+            updateTestSummary();
+        }
+
+        async function testSearchBands() {
+            const term = document.getElementById('searchTerm').value;
+            const url = `/api/public-reservas/search-bands?q=${encodeURIComponent(term)}`;
+            
+            console.log('Testing search bands...');
+            const result = await makeApiCall(url);
+            displayResult('searchResult', result, 'searchBands');
+        }
+
+        async function testGetSalas() {
+            const url = '/api/public-reservas/salas';
+            
+            console.log('Testing get salas...');
+            const result = await makeApiCall(url);
+            displayResult('salasResult', result, 'getSalas');
+        }
+
+        async function testCheckAvailability() {
+            const salaId = document.getElementById('salaId').value;
+            const fecha = document.getElementById('fecha').value;
+            const url = `/api/public-reservas/availability?sala_id=${salaId}&fecha=${fecha}`;
+            
+            console.log('Testing check availability...');
+            const result = await makeApiCall(url);
+            displayResult('availabilityResult', result, 'checkAvailability');
+        }
+
+        async function testDbConnection() {
+            // Test a simple query that should work if DB is connected
+            const url = '/api/clientes'; // Using existing endpoint
+            
+            console.log('Testing database connection...');
+            const result = await makeApiCall(url);
+            displayResult('dbResult', result, 'dbConnection');
+        }
+
+        function updateTestSummary() {
+            const summary = document.getElementById('testSummary');
+            let html = '<h4>Estado de Tests:</h4>';
+            
+            for (const [testName, result] of Object.entries(testResults)) {
+                if (result !== null) {
+                    const status = result ? 'success' : 'error';
+                    const icon = result ? '✅' : '❌';
+                    const label = testName.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+                    html += `<p>${icon} ${label} <span class="status ${status}">${result ? 'PASS' : 'FAIL'}</span></p>`;
+                }
+            }
+            
+            const completedTests = Object.values(testResults).filter(r => r !== null).length;
+            const passedTests = Object.values(testResults).filter(r => r === true).length;
+            
+            if (completedTests > 0) {
+                html += `<p><strong>Resumen: ${passedTests}/${completedTests} tests pasaron</strong></p>`;
+            }
+            
+            summary.innerHTML = html;
+        }
+
+        async function runAllTests() {
+            console.log('Running all tests...');
+            
+            // Reset results
+            testResults = {
+                searchBands: null,
+                getSalas: null,
+                checkAvailability: null,
+                dbConnection: null
+            };
+            
+            // Run all tests sequentially
+            await testDbConnection();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            await testGetSalas();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            await testSearchBands();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            await testCheckAvailability();
+            
+            console.log('All tests completed!');
+        }
+
+        // Initialize with current date
+        document.addEventListener('DOMContentLoaded', function() {
+            const today = new Date();
+            today.setDate(today.getDate() + 1); // Tomorrow
+            const tomorrow = today.toISOString().split('T')[0];
+            document.getElementById('fecha').value = tomorrow;
+            
+            console.log('Test page loaded. Ready to run tests.');
+        });
+    </script>
+</body>
+</html>

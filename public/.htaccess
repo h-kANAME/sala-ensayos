@@ -3,7 +3,20 @@ RewriteEngine On
 # CORS es manejado dinámicamente por PHP en api/index.php
 # No establecer headers CORS aquí para evitar conflictos
 
+# Ruta especial para reservas públicas - redirigir a reservas.html
+RewriteRule ^reservas/?$ reservas.html [L]
+
 # Redireccionar todas las peticiones API al index.php (incluyendo OPTIONS)
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^api/(.*)$ api/index.php [QSA,L]
+
+# Handle React Router - para el admin interface
+# No aplicar a archivos estáticos ni a reservas.html ni a API
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_URI} !^/public/api
+RewriteCond %{REQUEST_URI} !^/api
+RewriteCond %{REQUEST_URI} !^/reservas.html
+RewriteCond %{REQUEST_URI} !\.(js|css|png|jpg|jpeg|gif|svg|woff|woff2|ttf|eot|ico|json|txt|php)$
+RewriteRule . index.html [L]
