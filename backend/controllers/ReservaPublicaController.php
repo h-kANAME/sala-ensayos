@@ -1,95 +1,29 @@
 <?php
 
-// Función helper para resolver rutas - puede no estar disponible si se ejecuta directamente
-if (!function_exists('resolveBackendPath')) {
-    function resolveBackendPath($relativePath) {
-        $possiblePaths = [
-            './' . $relativePath,              // Mismo directorio
-            '../' . $relativePath,             // Nivel superior  
-            './backend/' . $relativePath,      // Subdirectorio backend
-        ];
-        
-        foreach ($possiblePaths as $path) {
-            if (file_exists($path)) {
-                return $path;
-            }
-        }
-        
-        throw new Exception("No se pudo encontrar: $relativePath");
-    }
-}
-
-// Clase Environment básica si no existe
-if (!class_exists('Environment')) {
-    class Environment {
-        public static function isDevelopment() {
-            $host = $_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME'] ?? 'localhost';
-            return strpos($host, 'kyz.com.ar') === false;
-        }
-    }
-}
-
 class ReservaPublicaController {
     private $db;
-
-    public function __construct() {
-        try {
-            // Detectar si estamos en producción o desarrollo
-            $serverHost = $_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME'] ?? 'localhost';
-            $isProduction = strpos($serverHost, 'kyz.com.ar') !== false;
-            
-            if ($isProduction) {
-                // Configuración para producción
-                $host = 'localhost';
-                $dbname = 'kyzcomar_sala-ensayos';
-                $username = 'kyzcomar_user-sala';
-                $password = 'salapassword';
-            } else {
-                // Configuración para desarrollo/Docker
-                $host = 'mysql'; // nombre del servicio en docker-compose
-                $dbname = 'sala_ensayos';
-                $username = 'sala_user';
-                $password = 'salapassword';
-            }
-            
-            $this->db = new PDO(
-                "mysql:host=$host;dbname=$dbname;charset=utf8",
-                $username,
-                $password
-            );
-            $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-            $this->db->exec("SET time_zone = '-03:00'");
-        } catch (Exception $e) {
-            error_log("Error conectando a base de datos: " . $e->getMessage());
-            throw $e;
-        }
+    
+    public function __construct($database) {
+        $this->db = $database;
     }
 
-    public function handleRequest() {
-        // Log para debugging - TEMPORAL: siempre logear
-        error_log("=== RESERVA PUBLICA CONTROLLER ===");
-        error_log("REQUEST_METHOD: " . $_SERVER['REQUEST_METHOD']);
-        error_log("PATH_INFO: " . ($_SERVER['PATH_INFO'] ?? 'No PATH_INFO'));
-        error_log("REQUEST_URI: " . $_SERVER['REQUEST_URI']);
-
-        // Parsear la ruta
-        $path = $_SERVER['REQUEST_URI'];
-        $path = str_replace('/public/api', '', $path);
-        $path = str_replace('/sala-ensayos/api', '', $path);
-        $path = preg_replace('#^/[^/]+/api#', '', $path);
-        $path = trim($path, '/');
+    public function processRequest($method, $path) {
+        error_log("=== RESERVA PUBLICA REQUEST ===");
+        error_log("Method: $method");
+        error_log("Path: $path");
         
-        // Remover query parameters
-        $path = parse_url($path, PHP_URL_PATH) ?: $path;
-        $path = trim($path, '/');
+        // Permitir CORS
+        $this->setCORSHeaders();
         
-        $pathParts = explode('/', $path);
-        
-        if (Environment::isDevelopment()) {
-            error_log("Path parts: " . print_r($pathParts, true));
+        if ($method === 'OPTIONS') {
+            http_response_code(200);
+            exit();
         }
-
-        switch ($_SERVER['REQUEST_METHOD']) {
+        
+        $pathParts = explode('/', trim($path, '/'));
+        error_log("Path parts: " . print_r($pathParts, true));
+        
+        switch ($method) {
             case 'GET':
                 $this->handleGet($pathParts);
                 break;
@@ -99,36 +33,36 @@ class ReservaPublicaController {
             default:
                 http_response_code(405);
                 echo json_encode(['success' => false, 'message' => 'Método no permitido']);
-                break;
         }
+    }
+    
+    private function setCORSHeaders() {
+        header('Access-Control-Allow-Origin: *');
+        header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
+        header('Access-Control-Allow-Headers: Content-Type, Authorization');
+        header('Content-Type: application/json; charset=utf-8');
     }
 
     private function handleGet($pathParts) {
-        // public-reservas/bands - alias para getSalas (compatibilidad)
-        if (count($pathParts) >= 2 && $pathParts[1] === 'bands') {
-            $this->getSalas();
-            return;
-        }
-        
         // public-reservas/search-bands?q=termino
         if (count($pathParts) >= 2 && $pathParts[1] === 'search-bands') {
             $this->searchBands();
             return;
         }
 
-        // public-reservas/availability?sala_id=1&fecha=2025-08-26
-        if (count($pathParts) >= 2 && $pathParts[1] === 'availability') {
-            $this->checkAvailability();
-            return;
-        }
-
-        // public-reservas/salas - listar salas disponibles
+        // public-reservas/salas
         if (count($pathParts) >= 2 && $pathParts[1] === 'salas') {
             $this->getSalas();
             return;
         }
 
-        // public-reservas/verificar-banda - verificar conflictos de banda
+        // public-reservas/check-availability?sala_id=X&fecha=Y
+        if (count($pathParts) >= 2 && $pathParts[1] === 'check-availability') {
+            $this->checkAvailability();
+            return;
+        }
+
+        // public-reservas/verificar-banda?cliente_id=X&fecha=Y&hora_inicio=Z&hora_fin=W
         if (count($pathParts) >= 2 && $pathParts[1] === 'verificar-banda') {
             $this->verificarBanda();
             return;
@@ -161,7 +95,6 @@ class ReservaPublicaController {
         $fecha = $_GET['fecha'] ?? '';
         $hora_inicio = $_GET['hora_inicio'] ?? '';
         $hora_fin = $_GET['hora_fin'] ?? '';
-        $excluir_id = $_GET['excluir_id'] ?? null;
 
         if (empty($cliente_id) || empty($fecha) || empty($hora_inicio) || empty($hora_fin)) {
             http_response_code(400);
@@ -173,20 +106,13 @@ class ReservaPublicaController {
             include_once resolveBackendPath('models/Reserva.php');
             $reserva = new Reserva($this->db);
             
-            $resultado = $reserva->verificarConflictoBanda(
-                $cliente_id,
-                $fecha,
-                $hora_inicio,
-                $hora_fin,
-                $excluir_id
-            );
-
-            echo json_encode($resultado);
+            $resultado = $reserva->verificarConflictoBanda($cliente_id, $fecha, $hora_inicio, $hora_fin);
+            echo json_encode(['success' => true, 'data' => $resultado]);
             
         } catch (Exception $e) {
             error_log("Error en verificarBanda: " . $e->getMessage());
             http_response_code(500);
-            echo json_encode(['success' => false, 'message' => 'Error al verificar conflictos']);
+            echo json_encode(['success' => false, 'message' => 'Error al verificar banda']);
         }
     }
 
@@ -243,13 +169,9 @@ class ReservaPublicaController {
             $horariosOcupados = [];
             
             // Consultar todas las reservas activas para esta sala y fecha
-            // Incluye reservas confirmadas, pendientes y en proceso de verificación
-            // para evitar dobles reservas en el mismo horario
-            $query = "SELECT hora_inicio, hora_fin FROM reservas 
+            $query = "SELECT hora_inicio, hora_fin, estado FROM reservas 
                       WHERE sala_id = :sala_id 
                       AND DATE(fecha_reserva) = :fecha 
-                      AND estado IN ('confirmada', 'pendiente') 
-                      AND estado_verificacion IN ('verificado', 'pendiente')
                       ORDER BY hora_inicio";
             
             $stmt = $this->db->prepare($query);
@@ -258,24 +180,19 @@ class ReservaPublicaController {
             $stmt->execute();
             
             while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                $horariosOcupados[] = [
-                    'hora_inicio' => $row['hora_inicio'],
-                    'hora_fin' => $row['hora_fin']
-                ];
+                // Solo incluir reservas que deben mostrarse como ocupadas
+                // NO incluir solo: cancelada
+                if ($row['estado'] !== 'cancelada') {
+                    $horariosOcupados[] = [
+                        'hora_inicio' => $row['hora_inicio'],
+                        'hora_fin' => $row['hora_fin']
+                    ];
+                }
             }
-
-            // También devolver configuración de horarios de funcionamiento
-            $configuracion = [
-                'hora_apertura' => '09:00:00',
-                'hora_cierre' => '23:00:00'
-            ];
 
             echo json_encode([
                 'success' => true, 
-                'data' => [
-                    'horarios_ocupados' => $horariosOcupados,
-                    'configuracion' => $configuracion
-                ]
+                'data' => ['horarios_ocupados' => $horariosOcupados]
             ]);
             
         } catch (Exception $e) {
@@ -285,13 +202,17 @@ class ReservaPublicaController {
         }
     }
 
-    // Obtener lista de salas
+    // Obtener todas las salas disponibles
     private function getSalas() {
+        error_log("=== EJECUTANDO getSalas ===");
         try {
             include_once resolveBackendPath('models/Sala.php');
+            error_log("Modelo Sala incluido");
             $sala = new Sala($this->db);
+            error_log("Instancia Sala creada");
             
             $stmt = $sala->obtenerTodas();
+            error_log("Método obtenerTodas() ejecutado");
             $salas = [];
             
             while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
@@ -305,7 +226,13 @@ class ReservaPublicaController {
                 ];
             }
 
-            echo json_encode(['success' => true, 'data' => $salas]);
+            // También devolver configuración de horarios de funcionamiento
+            $configuracion = [
+                'hora_apertura' => '09:00:00',
+                'hora_cierre' => '23:00:00'
+            ];
+
+            echo json_encode(['success' => true, 'data' => $salas, 'configuracion' => $configuracion]);
             
         } catch (Exception $e) {
             error_log("Error en getSalas: " . $e->getMessage());
@@ -314,7 +241,7 @@ class ReservaPublicaController {
         }
     }
 
-    // Iniciar proceso de reserva y enviar código de verificación
+    // Iniciar proceso de reserva - SOLO generar código sin crear reserva
     private function startReservation() {
         $input = file_get_contents('php://input');
         $data = json_decode($input, true);
@@ -359,7 +286,7 @@ class ReservaPublicaController {
             // Calcular importe total
             $importe_total = $salaData['tarifa_hora'] * $data['horas_reservadas'];
 
-            // Verificar disponibilidad
+            // Verificar disponibilidad EN TIEMPO REAL
             if (!$reserva->verificarDisponibilidad($data['sala_id'], $data['fecha_reserva'], 
                                                   $data['hora_inicio'], $data['hora_fin'])) {
                 http_response_code(409);
@@ -381,20 +308,12 @@ class ReservaPublicaController {
                 return;
             }
 
-            // Iniciar proceso de verificación
-            $resultado = $reserva->iniciarVerificacion(
-                $data['cliente_id'],
-                $data['sala_id'], 
-                $data['fecha_reserva'],
-                $data['hora_inicio'],
-                $data['hora_fin'],
-                $data['horas_reservadas'],
-                $importe_total
-            );
+            // NUEVO: Solo generar código y guardar datos temporalmente
+            $resultado = $this->generarCodigoTemporal($data, $clienteData, $salaData, $importe_total);
 
             if ($resultado) {
                 // Log de auditoría
-                $this->logAuditoria($data['cliente_id'], $resultado['reserva_id'], 'inicio_reserva', [
+                $this->logAuditoria($data['cliente_id'], $resultado['session_id'], 'inicio_proceso_reserva', [
                     'sala_id' => $data['sala_id'],
                     'fecha_reserva' => $data['fecha_reserva'],
                     'hora_inicio' => $data['hora_inicio'],
@@ -405,9 +324,9 @@ class ReservaPublicaController {
                     'success' => true,
                     'message' => 'Código de verificación enviado',
                     'data' => [
-                        'reserva_id' => $resultado['reserva_id'],
+                        'reserva_id' => $resultado['session_id'], // Usamos session_id como identificador
                         'email_destino' => $clienteData['contacto_email'],
-                        'codigo_para_envio' => $resultado['codigo_verificacion'], // Solo para integración con EmailJS
+                        'codigo_para_envio' => $resultado['codigo_verificacion'],
                         'banda_nombre' => $clienteData['nombre_banda'],
                         'fecha_expiracion' => $resultado['fecha_expiracion'],
                         'sala_nombre' => $salaData['nombre'],
@@ -416,7 +335,7 @@ class ReservaPublicaController {
                 ]);
             } else {
                 http_response_code(500);
-                echo json_encode(['success' => false, 'message' => 'Error al procesar la reserva']);
+                echo json_encode(['success' => false, 'message' => 'Error al iniciar el proceso de reserva']);
             }
 
         } catch (Exception $e) {
@@ -426,7 +345,46 @@ class ReservaPublicaController {
         }
     }
 
-    // Verificar código de verificación
+    // NUEVO: Generar código temporal sin crear reserva
+    private function generarCodigoTemporal($data, $clienteData, $salaData, $importe_total) {
+        // Generar código de 6 dígitos
+        $codigo = sprintf("%06d", mt_rand(0, 999999));
+        $session_id = 'temp_' . uniqid() . '_' . time();
+        $expiracion = date('Y-m-d H:i:s', strtotime('+15 minutes'));
+
+        // Guardar datos temporales en sesión/archivo/cache
+        $datosTemporales = [
+            'cliente_id' => $data['cliente_id'],
+            'sala_id' => $data['sala_id'],
+            'fecha_reserva' => $data['fecha_reserva'],
+            'hora_inicio' => $data['hora_inicio'],
+            'hora_fin' => $data['hora_fin'],
+            'horas_reservadas' => $data['horas_reservadas'],
+            'importe_total' => $importe_total,
+            'codigo_verificacion' => $codigo,
+            'fecha_expiracion' => $expiracion,
+            'intentos' => 0,
+            'cliente_data' => $clienteData,
+            'sala_data' => $salaData
+        ];
+
+        // Guardar en archivo temporal
+        $tempDir = sys_get_temp_dir() . '/reservas_temp/';
+        if (!is_dir($tempDir)) {
+            mkdir($tempDir, 0777, true);
+        }
+
+        $archivo = $tempDir . $session_id . '.json';
+        file_put_contents($archivo, json_encode($datosTemporales));
+
+        return [
+            'session_id' => $session_id,
+            'codigo_verificacion' => $codigo,
+            'fecha_expiracion' => $expiracion
+        ];
+    }
+
+    // MODIFICADO: Verificar código y crear reserva recién ahora
     private function verifyCode() {
         $input = file_get_contents('php://input');
         $data = json_decode($input, true);
@@ -438,24 +396,94 @@ class ReservaPublicaController {
         }
 
         try {
+            // Cargar datos temporales
+            $tempDir = sys_get_temp_dir() . '/reservas_temp/';
+            $archivo = $tempDir . $data['reserva_id'] . '.json';
+
+            if (!file_exists($archivo)) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'Sesión no encontrada o expirada']);
+                return;
+            }
+
+            $datosTemporales = json_decode(file_get_contents($archivo), true);
+
+            // Verificar expiración
+            if (strtotime($datosTemporales['fecha_expiracion']) < time()) {
+                unlink($archivo); // Eliminar archivo temporal
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'El código de verificación ha expirado']);
+                return;
+            }
+
+            // Verificar código
+            if ($datosTemporales['codigo_verificacion'] !== $data['codigo']) {
+                $datosTemporales['intentos']++;
+                
+                if ($datosTemporales['intentos'] >= 3) {
+                    unlink($archivo); // Eliminar archivo temporal
+                    http_response_code(400);
+                    echo json_encode(['success' => false, 'message' => 'Se agotaron los 3 intentos. Deberás gestionar la reserva nuevamente.']);
+                    return;
+                } else {
+                    // Guardar intentos actualizados
+                    file_put_contents($archivo, json_encode($datosTemporales));
+                    $intentos_restantes = 3 - $datosTemporales['intentos'];
+                    http_response_code(400);
+                    echo json_encode(['success' => false, 'message' => "Código incorrecto. Te quedan {$intentos_restantes} intento" . ($intentos_restantes !== 1 ? 's' : '') . "."]);
+                    return;
+                }
+            }
+
+            // ¡CÓDIGO CORRECTO! Ahora SÍ crear la reserva
             include_once resolveBackendPath('models/Reserva.php');
             $reserva = new Reserva($this->db);
 
-            $resultado = $reserva->verificarCodigo($data['reserva_id'], $data['codigo']);
-
-            // Log de auditoría
-            $accion = $resultado['success'] ? 'verificacion_exitosa' : 'intento_verificacion';
-            $this->logAuditoria(null, $data['reserva_id'], $accion, [
-                'codigo_ingresado' => $data['codigo'],
-                'resultado' => $resultado['message']
-            ]);
-
-            if ($resultado['success']) {
-                // Log adicional para reserva confirmada
-                $this->logAuditoria(null, $data['reserva_id'], 'reserva_confirmada', []);
+            // VERIFICAR DISPONIBILIDAD EN TIEMPO REAL NUEVAMENTE
+            if (!$reserva->verificarDisponibilidad($datosTemporales['sala_id'], $datosTemporales['fecha_reserva'], 
+                                                  $datosTemporales['hora_inicio'], $datosTemporales['hora_fin'])) {
+                unlink($archivo);
+                http_response_code(409);
+                echo json_encode(['success' => false, 'message' => 'Lo sentimos, el horario ya no está disponible. Alguien más lo reservó mientras verificabas el código.']);
+                return;
             }
 
-            echo json_encode($resultado);
+            // Verificar conflicto de banda nuevamente
+            $conflictoBanda = $reserva->verificarConflictoBanda(
+                $datosTemporales['cliente_id'],
+                $datosTemporales['fecha_reserva'],
+                $datosTemporales['hora_inicio'],
+                $datosTemporales['hora_fin']
+            );
+
+            if (!$conflictoBanda['sin_conflicto']) {
+                unlink($archivo);
+                http_response_code(409);
+                echo json_encode(['success' => false, 'message' => 'Esta banda ya tiene una reserva en ese horario: ' . $conflictoBanda['reservas_conflicto']]);
+                return;
+            }
+
+            // Crear reserva CONFIRMADA directamente
+            $reservaId = $this->crearReservaConfirmada($datosTemporales);
+
+            if ($reservaId) {
+                // Eliminar archivo temporal
+                unlink($archivo);
+
+                // Log de auditoría
+                $this->logAuditoria($datosTemporales['cliente_id'], $reservaId, 'reserva_confirmada_publica', [
+                    'session_id' => $data['reserva_id']
+                ]);
+
+                echo json_encode([
+                    'success' => true, 
+                    'message' => 'Reserva confirmada exitosamente',
+                    'data' => ['reserva_id' => $reservaId]
+                ]);
+            } else {
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Error al crear la reserva']);
+            }
 
         } catch (Exception $e) {
             error_log("Error en verifyCode: " . $e->getMessage());
@@ -464,38 +492,54 @@ class ReservaPublicaController {
         }
     }
 
-    // Método helper para logging de auditoría
-    private function logAuditoria($cliente_id, $reserva_id, $accion, $datosAdicionales = []) {
+    // NUEVO: Crear reserva confirmada directamente
+    private function crearReservaConfirmada($datos) {
         try {
-            $query = "INSERT INTO logs_reservas_publicas 
-                      (cliente_id, reserva_id, accion, ip_address, user_agent, datos_adicionales) 
-                      VALUES (:cliente_id, :reserva_id, :accion, :ip_address, :user_agent, :datos_adicionales)";
-            
+            $query = "INSERT INTO reservas 
+                     SET cliente_id=:cliente_id, sala_id=:sala_id, usuario_id=NULL,
+                         fecha_reserva=:fecha_reserva, hora_inicio=:hora_inicio, hora_fin=:hora_fin,
+                         horas_reservadas=:horas_reservadas, estado='confirmada', estado_actual='pendiente',
+                         importe_total=:importe_total, estado_verificacion='verificado',
+                         notas='Reserva pública confirmada'";
+
             $stmt = $this->db->prepare($query);
-            $stmt->bindParam(':cliente_id', $cliente_id);
-            $stmt->bindParam(':reserva_id', $reserva_id);
-            $stmt->bindParam(':accion', $accion);
-            $stmt->bindValue(':ip_address', $_SERVER['REMOTE_ADDR'] ?? 'unknown');
-            $stmt->bindValue(':user_agent', $_SERVER['HTTP_USER_AGENT'] ?? 'unknown');
-            $stmt->bindValue(':datos_adicionales', json_encode($datosAdicionales));
             
-            $stmt->execute();
+            $stmt->bindParam(":cliente_id", $datos['cliente_id']);
+            $stmt->bindParam(":sala_id", $datos['sala_id']);
+            $stmt->bindParam(":fecha_reserva", $datos['fecha_reserva']);
+            $stmt->bindParam(":hora_inicio", $datos['hora_inicio']);
+            $stmt->bindParam(":hora_fin", $datos['hora_fin']);
+            $stmt->bindParam(":horas_reservadas", $datos['horas_reservadas']);
+            $stmt->bindParam(":importe_total", $datos['importe_total']);
+
+            if ($stmt->execute()) {
+                return $this->db->lastInsertId();
+            }
             
+            return false;
         } catch (Exception $e) {
-            error_log("Error en logAuditoria: " . $e->getMessage());
-            // No fallar la operación principal por un error de logging
+            error_log("Error en crearReservaConfirmada: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    // Log de auditoría simple
+    private function logAuditoria($cliente_id, $referencia_id, $accion, $datos = []) {
+        try {
+            $log = [
+                'timestamp' => date('Y-m-d H:i:s'),
+                'cliente_id' => $cliente_id,
+                'referencia_id' => $referencia_id,
+                'accion' => $accion,
+                'datos' => $datos,
+                'ip' => $_SERVER['REMOTE_ADDR'] ?? 'unknown'
+            ];
+            
+            error_log("AUDITORIA RESERVA PUBLICA: " . json_encode($log));
+        } catch (Exception $e) {
+            error_log("Error en log de auditoría: " . $e->getMessage());
         }
     }
 }
 
-// Ejecutar el controller
-try {
-    $controller = new ReservaPublicaController();
-    $controller->handleRequest();
-} catch (Exception $e) {
-    error_log("Error fatal en ReservaPublicaController: " . $e->getMessage());
-    http_response_code(500);
-    // TEMPORAL: Mostrar error real para debugging
-    echo json_encode(['success' => false, 'message' => 'Error del servidor', 'debug_error' => $e->getMessage(), 'debug_file' => $e->getFile(), 'debug_line' => $e->getLine()]);
-}
 ?>

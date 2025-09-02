@@ -142,8 +142,9 @@ $path = parse_url($request, PHP_URL_PATH);
 error_log("Path parseado: " . $path);
 
 // Limpiar path - remover diferentes prefijos según el entorno
-$path = str_replace('/public/api', '', $path);  // Desarrollo
-$path = str_replace('/sala-ensayos/api', '', $path);  // Producción
+$path = str_replace('/public/api', '', $path);  // Desarrollo con public/api/
+$path = str_replace('/sala-ensayos/api', '', $path);  // Producción con /sala-ensayos/api
+$path = preg_replace('#^/api(?=/|$)#', '', $path);  // Docker - solo /api al inicio
 $path = preg_replace('#^/[^/]+/api#', '', $path);  // Cualquier subdirectorio/api
 $path = trim($path, '/');
 
@@ -173,6 +174,14 @@ switch(true) {
             }
             
             include_once $controllerPath;
+            
+            // Instanciar y ejecutar el controlador
+            require_once resolveBackendPath('config/database.php');
+            $database = new Database();
+            $db = $database->getConnection();
+            $controller = new ReservaPublicaController($db);
+            $controller->processRequest($_SERVER['REQUEST_METHOD'], $path);
+            
         } catch (Exception $e) {
             error_log("Exception en public-reservas: " . $e->getMessage());
             error_log("Stack trace: " . $e->getTraceAsString());

@@ -692,7 +692,7 @@
             busyContainer.innerHTML = '<p>Cargando horarios ocupados...</p>';
             
             try {
-                const response = await fetch(`${API_BASE}/availability?sala_id=${selectedSala.id}&fecha=${selectedDate}`);
+                const response = await fetch(`${API_BASE}/check-availability?sala_id=${selectedSala.id}&fecha=${selectedDate}`);
                 const data = await response.json();
                 
                 if (data.success) {
@@ -888,8 +888,8 @@
                 const conflictoResponse = await fetch(`${API_BASE}/verificar-banda?cliente_id=${selectedBand.id}&fecha=${selectedDate}&hora_inicio=${selectedSlot.hora_inicio}&hora_fin=${selectedSlot.hora_fin}`);
                 const conflictoData = await conflictoResponse.json();
                 
-                if (!conflictoData.sin_conflicto) {
-                    alert(`No se puede proceder: Esta banda ya tiene una reserva en ese horario: ${conflictoData.reservas_conflicto}`);
+                if (!conflictoData.data.sin_conflicto) {
+                    alert(`No se puede proceder: Esta banda ya tiene una reserva en ese horario: ${conflictoData.data.reservas_conflicto}`);
                     return;
                 }
             } catch (error) {
@@ -916,8 +916,10 @@
         }
 
         // Variables globales para verificación
-        let currentReservaId = null;
+        let currentSessionId = null; // Ahora es session_id, no reserva_id
+        let currentReservaId = null; // ID de la reserva confirmada
         let verificationCode = null;
+        let verificationAttempts = 3;
 
         // Iniciar proceso de verificación
         async function startVerification() {
@@ -946,7 +948,7 @@
                 const data = await response.json();
                 
                 if (data.success) {
-                    currentReservaId = data.data.reserva_id;
+                    currentSessionId = data.data.reserva_id; // En el nuevo flujo, es session_id
                     verificationCode = data.data.codigo_para_envio; // Para integración con EmailJS
                     
                     // Enviar email usando EmailJS
@@ -1020,8 +1022,8 @@
                 return;
             }
             
-            if (!currentReservaId) {
-                alert('Error: No se encontró la reserva. Por favor inicia el proceso nuevamente.');
+            if (!currentSessionId) {
+                alert('Error: No se encontró la sesión. Por favor inicia el proceso nuevamente.');
                 return;
             }
             
@@ -1032,7 +1034,7 @@
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        reserva_id: currentReservaId,
+                        reserva_id: currentSessionId, // Ahora enviamos session_id
                         codigo: code
                     })
                 });
@@ -1040,17 +1042,52 @@
                 const data = await response.json();
                 
                 if (data.success) {
+                    // Guardar ID de reserva para mostrar
+                    currentReservaId = data.data.reserva_id;
+                    
+                    // Limpiar sesión para evitar reintentos
+                    currentSessionId = null;
+                    verificationCode = null;
+                    
                     // Mostrar paso de confirmación
                     showStep(STEPS.CONFIRMED);
                 } else {
-                    alert('Código incorrecto: ' + data.message);
-                    codeInput.value = '';
-                    codeInput.focus();
+                    verificationAttempts--;
+                    
+                    if (verificationAttempts <= 0) {
+                        // Se acabaron los intentos
+                        alert('Se agotaron los 3 intentos. Deberás gestionar la reserva nuevamente desde el inicio.');
+                        setTimeout(() => {
+                            startNewReservation(); // Volver al inicio
+                        }, 2000);
+                    } else {
+                        alert(`Código incorrecto. Te quedan ${verificationAttempts} intento${verificationAttempts !== 1 ? 's' : ''}.`);
+                        codeInput.value = '';
+                        codeInput.focus();
+                        
+                        // Actualizar el indicador de intentos en pantalla
+                        updateAttemptsDisplay();
+                    }
                 }
                 
             } catch (error) {
                 console.error('Error:', error);
                 alert('Error de conexión. Por favor intenta nuevamente.');
+            }
+        }
+
+        // Actualizar indicador de intentos
+        function updateAttemptsDisplay() {
+            const codeSection = document.getElementById('code-input-section');
+            if (codeSection && verificationAttempts < 3 && verificationAttempts > 0) {
+                let attemptsDiv = document.getElementById('attempts-warning');
+                if (!attemptsDiv) {
+                    attemptsDiv = document.createElement('div');
+                    attemptsDiv.id = 'attempts-warning';
+                    attemptsDiv.style.cssText = 'background: #fff3cd; color: #856404; padding: 12px; margin: 15px 0; border-radius: 8px; border-left: 4px solid #ffc107;';
+                    codeSection.appendChild(attemptsDiv);
+                }
+                attemptsDiv.innerHTML = `⚠️ Intentos restantes: ${verificationAttempts}`;
             }
         }
 
@@ -1061,8 +1098,9 @@
             selectedSala = null;
             selectedDate = null;
             selectedSlot = null;
-            currentReservaId = null;
+            currentSessionId = null; // Resetear session_id
             verificationCode = null;
+            verificationAttempts = 3; // Resetear intentos
             
             // Volver al paso 1
             showStep(STEPS.SEARCH_BAND);

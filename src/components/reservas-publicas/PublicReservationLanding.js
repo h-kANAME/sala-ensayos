@@ -107,6 +107,16 @@ const PublicReservationLanding = () => {
     setCurrentStep(STEPS.CONFIRMED);
   };
 
+  const handleRestart = () => {
+    // Reiniciar todo el proceso al paso 1
+    setCurrentStep(STEPS.SEARCH_BAND);
+    setSelectedBand(null);
+    setSelectedSlot(null);
+    setReservationData(null);
+    setLoading(false);
+    setError('');
+  };
+
   const handleStartOver = () => {
     setCurrentStep(STEPS.SEARCH_BAND);
     setSelectedBand(null);
@@ -167,6 +177,7 @@ const PublicReservationLanding = () => {
             selectedSlot={selectedSlot}
             onVerificationSuccess={handleVerificationSuccess}
             onBack={() => setCurrentStep(STEPS.SELECT_DATETIME)}
+            onRestart={handleRestart}
             error={error}
           />
         );

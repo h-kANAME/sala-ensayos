@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import Layout from '../components/common/Layout';
 import CalendarioReservas from '../components/reservas/CalendarioReservas';
+import CalendarioPorSala from '../components/calendario-salas/CalendarioPorSala';
 import './Dashboard.css';
 
 const Dashboard = () => {
@@ -20,6 +21,8 @@ const Dashboard = () => {
         switch (vistaActiva) {
             case 'reservas':
                 return <CalendarioReservas />;
+            case 'calendario-salas':
+                return <CalendarioPorSala />;
             case 'estadisticas':
             default:
                 return (
@@ -57,7 +60,13 @@ const Dashboard = () => {
                         className={vistaActiva === 'reservas' ? 'active' : ''}
                         onClick={() => setVistaActiva('reservas')}
                     >
-                        📅 Reservas
+                        📅 Gestión Reservas
+                    </button>
+                    <button 
+                        className={vistaActiva === 'calendario-salas' ? 'active' : ''}
+                        onClick={() => setVistaActiva('calendario-salas')}
+                    >
+                        🗓️ Calendario Salas
                     </button>
                 </div>
 

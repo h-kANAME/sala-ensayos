@@ -1,28 +1,37 @@
 import { api } from './api';
 
 export const salasService = {
-    // Obtener todas las salas
-    obtenerSalas: async () => {
-        try {
-            console.log('🏠 salasService.obtenerSalas() - Iniciando...');
-            const response = await api.get('/salas');
-            console.log('✅ salasService - Response recibida:', response);
-            return response.data || response;
-        } catch (error) {
-            console.error('❌ salasService - Error:', error);
-            console.error('❌ Response data:', error.response?.data);
-            console.error('❌ Status:', error.response?.status);
-            throw new Error(error.response?.data?.message || error.message || 'Error obteniendo salas');
-        }
-    },
+  // Obtener todas las salas
+  obtenerSalas: async () => {
+    console.log('🏠 Obteniendo todas las salas...');
+    return await api.get('/salas');
+  },
 
-    // Obtener sala por ID
-    obtenerSalaPorId: async (id) => {
-        try {
-            const response = await api.get(`/salas/${id}`);
-            return response.data || response;
-        } catch (error) {
-            throw new Error(error.response?.data?.message || error.message || 'Error obteniendo sala');
-        }
-    }
+  // Obtener sala por ID
+  obtenerSalaPorId: async (id) => {
+    console.log(`🏠 Obteniendo sala ID: ${id}`);
+    return await api.get(`/salas/${id}`);
+  },
+
+  // Crear nueva sala
+  crearSala: async (datosSala) => {
+    console.log('➕ Creando nueva sala...');
+    console.log('📋 Datos de sala:', datosSala);
+    return await api.post('/salas', datosSala);
+  },
+
+  // Actualizar sala
+  actualizarSala: async (id, datosSala) => {
+    console.log(`✏️ Actualizando sala ID: ${id}`);
+    console.log('📋 Datos de actualización:', datosSala);
+    return await api.put(`/salas/${id}`, datosSala);
+  },
+
+  // Eliminar sala
+  eliminarSala: async (id) => {
+    console.log(`🗑️ Eliminando sala ID: ${id}`);
+    return await api.delete(`/salas/${id}`);
+  }
 };
+
+export default salasService;

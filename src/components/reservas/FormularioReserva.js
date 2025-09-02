@@ -4,7 +4,7 @@ import { clientesService } from '../../services/clientesService';
 import { salasService } from '../../services/salasService';
 import './FormularioReserva.css';
 
-const FormularioReserva = ({ onReservaCreada, onCancelar, fechaSeleccionada = null, reservaEditando = null }) => {
+const FormularioReserva = ({ onReservaCreada, onReservaGuardada, onCancelar, fechaSeleccionada = null, reservaEditando = null, datosIniciales = null }) => {
   // Estados para el formulario
   const [formData, setFormData] = useState({
     cliente_id: '',
@@ -51,6 +51,17 @@ const FormularioReserva = ({ onReservaCreada, onCancelar, fechaSeleccionada = nu
       });
     }
   }, [reservaEditando]);
+
+  // Cargar datos iniciales (para crear desde calendario)
+  useEffect(() => {
+    if (datosIniciales && !reservaEditando) {
+      console.log('📋 Cargando datos iniciales:', datosIniciales);
+      setFormData(prevData => ({
+        ...prevData,
+        ...datosIniciales
+      }));
+    }
+  }, [datosIniciales, reservaEditando]);
 
   // Actualizar fecha si se recibe una nueva
   useEffect(() => {
@@ -280,6 +291,13 @@ const FormularioReserva = ({ onReservaCreada, onCancelar, fechaSeleccionada = nu
         setTimeout(() => {
           onReservaCreada(resultado);
         }, 1500); // Dar tiempo para ver el mensaje de éxito
+      }
+      
+      // Notificar al componente padre (para calendario)
+      if (onReservaGuardada) {
+        setTimeout(() => {
+          onReservaGuardada(resultado);
+        }, 1500);
       }
 
     } catch (error) {

@@ -7,6 +7,7 @@ const VerificationForm = ({
   selectedSlot, 
   onVerificationSuccess, 
   onBack, 
+  onRestart,
   error 
 }) => {
   const [code, setCode] = useState(['', '', '', '', '', '']);
@@ -133,12 +134,22 @@ const VerificationForm = ({
       if (data.success) {
         onVerificationSuccess();
       } else {
-        setVerificationError(data.message || 'Código incorrecto');
-        setAttempts(prev => Math.max(0, prev - 1));
+        const newAttempts = attempts - 1;
+        setAttempts(newAttempts);
         
-        // Limpiar el código para permitir nuevo intento
-        setCode(['', '', '', '', '', '']);
-        inputRefs.current[0]?.focus();
+        if (newAttempts <= 0) {
+          // Se acabaron los intentos, redirigir al inicio
+          setVerificationError('Se agotaron los intentos. Deberás gestionar la reserva nuevamente desde el inicio.');
+          setTimeout(() => {
+            onRestart(); // Volver al paso 1
+          }, 3000);
+        } else {
+          // Mostrar intentos restantes
+          setVerificationError(`Código incorrecto. Te quedan ${newAttempts} intento${newAttempts !== 1 ? 's' : ''}.`);
+          // Limpiar el código para permitir nuevo intento
+          setCode(['', '', '', '', '', '']);
+          inputRefs.current[0]?.focus();
+        }
       }
     } catch (error) {
       console.error('Error verifying code:', error);

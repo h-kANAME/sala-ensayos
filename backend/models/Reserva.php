@@ -216,7 +216,7 @@ class Reserva
 
         // Buscar reservas activas de la misma banda que se superpongan en horario
         $query = "SELECT COALESCE(COUNT(r.id), 0) as count, 
-                         COALESCE(GROUP_CONCAT(CONCAT('Sala ', s.nombre, ' (', r.hora_inicio, '-', r.hora_fin, ')') SEPARATOR ', '), '') as reservas_conflicto
+                         COALESCE(GROUP_CONCAT(CONCAT(s.nombre, ' (', r.hora_inicio, '-', r.hora_fin, ')') SEPARATOR ', '), '') as reservas_conflicto
                   FROM " . $this->table_name . " r
                   LEFT JOIN salas s ON r.sala_id = s.id
                   WHERE r.cliente_id = :cliente_id 
