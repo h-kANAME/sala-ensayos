@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { Link } from 'react-router-dom';
 import './Layout.css';
 
 const Layout = ({ children }) => {
     const { user, logout, isAdmin } = useAuth();
+    const [navCollapsed, setNavCollapsed] = useState(true);
 
     const handleLogout = () => {
         logout();
@@ -26,21 +27,26 @@ const Layout = ({ children }) => {
             </header>
 
             <nav className="layout-nav">
-                <ul className="nav-menu">
-                    <li><Link to="/dashboard">Dashboard</Link></li>
-                    {/* <li><a href="#reservas">Reservas</a></li> */}
-                    <li><Link to="/clientes">Clientes</Link></li>
+                <button 
+                    className={`nav-toggle ${navCollapsed ? '' : 'active'}`}
+                    onClick={() => setNavCollapsed(!navCollapsed)}
+                >
+                    🗺️ Menú
+                </button>
+                <ul className={`nav-menu ${navCollapsed ? 'collapsed' : ''}`}>
+                    <li><Link to="/dashboard" onClick={() => setNavCollapsed(true)}>📊 Dashboard</Link></li>
+                    <li><Link to="/clientes" onClick={() => setNavCollapsed(true)}>👥 Clientes</Link></li>
                     
                     {/* Solo admins pueden acceder a Productos y Reportes */}
                     {isAdmin && (
                         <>
-                            <li><Link to="/productos">Productos</Link></li>
-                            <li><a href="#reportes">Reportes</a></li>
+                            <li><Link to="/productos" onClick={() => setNavCollapsed(true)}>📦 Productos</Link></li>
+                            <li><a href="#reportes" onClick={() => setNavCollapsed(true)}>📈 Reportes</a></li>
                         </>
                     )}
                     
                     {/* Todos pueden acceder a Ventas */}
-                    <li><Link to="/ventas">Ventas</Link></li>
+                    <li><Link to="/ventas" onClick={() => setNavCollapsed(true)}>💵 Ventas</Link></li>
                 </ul>
             </nav>
 

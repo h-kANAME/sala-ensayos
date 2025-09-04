@@ -4,6 +4,13 @@
     flex-direction: column;
 }
 
+/* Mobile-first responsive breakpoints */
+@media (max-width: 768px) {
+    .layout {
+        font-size: 14px;
+    }
+}
+
 .layout-header {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
@@ -20,6 +27,19 @@
     align-items: center;
 }
 
+@media (max-width: 768px) {
+    .header-content {
+        flex-direction: column;
+        gap: 0.5rem;
+        padding: 0.5rem;
+    }
+    
+    .header-content h1 {
+        font-size: 1.2rem;
+        text-align: center;
+    }
+}
+
 .header-content h1 {
     margin: 0;
     font-size: 1.5rem;
@@ -30,6 +50,22 @@
     display: flex;
     align-items: center;
     gap: 1rem;
+}
+
+@media (max-width: 768px) {
+    .user-info {
+        gap: 0.5rem;
+        font-size: 0.9rem;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .user-info span {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 120px;
+    }
 }
 
 .user-role {
@@ -67,6 +103,30 @@
     gap: 2rem;
 }
 
+@media (max-width: 768px) {
+    .nav-menu {
+        flex-direction: column;
+        gap: 0;
+        padding: 0;
+        background: #f8f9fa;
+    }
+    
+    .nav-menu li {
+        border-bottom: 1px solid #dee2e6;
+    }
+    
+    .nav-menu a {
+        padding: 1rem;
+        display: block;
+        text-align: center;
+        font-size: 1rem;
+    }
+    
+    .nav-menu a:hover {
+        background: #e9ecef;
+    }
+}
+
 .nav-menu a {
     color: #495057;
     text-decoration: none;
@@ -89,4 +149,48 @@
     max-width: 1200px;
     margin: 0 auto;
     padding: 2rem 1rem;
+}
+
+@media (max-width: 768px) {
+    .main-content {
+        padding: 1rem 0.5rem;
+    }
+}
+
+/* Mobile navigation toggle */
+@media (max-width: 768px) {
+    .layout-nav {
+        position: relative;
+    }
+    
+    .nav-toggle {
+        display: block;
+        background: #667eea;
+        color: white;
+        border: none;
+        padding: 1rem;
+        width: 100%;
+        text-align: left;
+        font-size: 1rem;
+        cursor: pointer;
+    }
+    
+    .nav-toggle:after {
+        content: '▼';
+        float: right;
+    }
+    
+    .nav-toggle.active:after {
+        content: '▲';
+    }
+    
+    .nav-menu.collapsed {
+        display: none;
+    }
+}
+
+@media (min-width: 769px) {
+    .nav-toggle {
+        display: none;
+    }
 }

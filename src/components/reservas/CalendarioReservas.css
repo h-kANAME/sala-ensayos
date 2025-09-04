@@ -13,6 +13,19 @@
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
+@media (max-width: 768px) {
+    .calendario-header {
+        flex-direction: column;
+        gap: 1rem;
+        padding: 1rem;
+    }
+    
+    .calendario-header h2 {
+        font-size: 1.3rem;
+        text-align: center;
+    }
+}
+
 .calendario-header h2 {
     margin: 0;
     color: #333;
@@ -22,6 +35,24 @@
     display: flex;
     align-items: center;
     gap: 1.5rem;
+}
+
+@media (max-width: 768px) {
+    .header-actions {
+        flex-direction: column;
+        gap: 0.8rem;
+        width: 100%;
+    }
+    
+    .vista-selector {
+        width: 100%;
+    }
+    
+    .selector-vista {
+        width: 100%;
+        padding: 0.75rem;
+        font-size: 1rem;
+    }
 }
 
 .vista-selector {
@@ -51,6 +82,27 @@
     background: #f8f9fa;
     padding: 0.5rem;
     border-radius: 8px;
+}
+
+@media (max-width: 768px) {
+    .controles-periodo {
+        width: 100%;
+        padding: 0.75rem;
+        justify-content: center;
+    }
+    
+    .btn-periodo {
+        padding: 0.75rem;
+        min-width: 44px;
+        font-size: 1.1rem;
+    }
+    
+    .periodo-actual {
+        font-size: 1rem;
+        min-width: auto;
+        flex: 1;
+        text-align: center;
+    }
 }
 
 .btn-periodo {
@@ -85,6 +137,15 @@
     cursor: pointer;
     font-weight: 600;
     transition: background 0.3s;
+}
+
+@media (max-width: 768px) {
+    .btn-nueva-reserva {
+        width: 100%;
+        padding: 1rem;
+        font-size: 1.1rem;
+        min-height: 44px;
+    }
 }
 
 .btn-nueva-reserva:hover {
@@ -148,11 +209,30 @@
     margin-top: 1.5rem;
 }
 
+@media (max-width: 768px) {
+    .reservas-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+}
+
 .reserva-item {
     border: 1px solid #e9ecef;
     border-radius: 10px;
     padding: 1.5rem;
     transition: transform 0.3s, box-shadow 0.3s;
+}
+
+@media (max-width: 768px) {
+    .reserva-item {
+        padding: 1rem;
+        border-radius: 8px;
+    }
+    
+    .reserva-item:hover {
+        transform: none;
+    }
 }
 
 .reserva-item:hover {
@@ -236,6 +316,21 @@
     flex-wrap: wrap;
     gap: 0.5rem;
     margin-top: 1rem;
+}
+
+@media (max-width: 768px) {
+    .reserva-acciones {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .reserva-acciones .btn-action {
+        width: 100%;
+        min-height: 44px;
+        font-size: 1rem;
+        padding: 0.75rem;
+        justify-content: center;
+    }
 }
 
 .btn-detalles, .btn-checkin {
@@ -327,6 +422,14 @@
     justify-content: center;
     text-align: center;
     white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+    .btn-action {
+        min-height: 44px;
+        font-size: 1rem;
+        padding: 0.75rem 1rem;
+    }
 }
 
 .btn-primary {
