@@ -23,6 +23,12 @@ class Reserva
     public $hora_salida;
     public $estado_actual;
     public $fecha_creacion;
+    
+    public $es_recurrente;
+    public $tipo_recurrencia;
+    public $fecha_fin_recurrencia;
+    public $reserva_padre_id;
+    public $serie_recurrencia_id;
 
     public function __construct($db)
     {
@@ -38,7 +44,9 @@ class Reserva
         SET cliente_id=:cliente_id, sala_id=:sala_id, usuario_id=:usuario_id,
             fecha_reserva=:fecha_reserva, hora_inicio=:hora_inicio, hora_fin=:hora_fin,
             horas_reservadas=:horas_reservadas, estado=:estado, importe_total=:importe_total,
-            notas=:notas, estado_actual=:estado_actual";
+            notas=:notas, estado_actual=:estado_actual, es_recurrente=:es_recurrente,
+            tipo_recurrencia=:tipo_recurrencia, fecha_fin_recurrencia=:fecha_fin_recurrencia,
+            reserva_padre_id=:reserva_padre_id, serie_recurrencia_id=:serie_recurrencia_id";
 
         error_log("Query a ejecutar: " . $query);
         
@@ -61,6 +69,11 @@ class Reserva
         $this->estado = htmlspecialchars(strip_tags($this->estado));
         $this->importe_total = htmlspecialchars(strip_tags($this->importe_total));
         $this->notas = htmlspecialchars(strip_tags($this->notas));
+        $this->es_recurrente = $this->es_recurrente ? 1 : 0;
+        $this->tipo_recurrencia = $this->tipo_recurrencia ? htmlspecialchars(strip_tags($this->tipo_recurrencia)) : null;
+        $this->fecha_fin_recurrencia = $this->fecha_fin_recurrencia ? htmlspecialchars(strip_tags($this->fecha_fin_recurrencia)) : null;
+        $this->reserva_padre_id = $this->reserva_padre_id ? htmlspecialchars(strip_tags($this->reserva_padre_id)) : null;
+        $this->serie_recurrencia_id = $this->serie_recurrencia_id ? htmlspecialchars(strip_tags($this->serie_recurrencia_id)) : null;
 
         // Debug de valores antes del bind
         error_log("Valores a insertar:");
@@ -88,6 +101,11 @@ class Reserva
         $stmt->bindParam(":importe_total", $this->importe_total);
         $stmt->bindParam(":notas", $this->notas);
         $stmt->bindParam(":estado_actual", $this->estado_actual);
+        $stmt->bindParam(":es_recurrente", $this->es_recurrente);
+        $stmt->bindParam(":tipo_recurrencia", $this->tipo_recurrencia);
+        $stmt->bindParam(":fecha_fin_recurrencia", $this->fecha_fin_recurrencia);
+        $stmt->bindParam(":reserva_padre_id", $this->reserva_padre_id);
+        $stmt->bindParam(":serie_recurrencia_id", $this->serie_recurrencia_id);
 
         error_log("Ejecutando query...");
         error_log("About to execute prepared statement");
@@ -800,6 +818,206 @@ class Reserva
     {
         $calculo = $this->calcularPrecioReserva($cliente_id, $hora_inicio, $hora_fin);
         return $calculo ? $calculo['precio'] : 0;
+    }
+
+    // Crear reservas recurrentes
+    public function crearReservasRecurrentes($datos_reserva)
+    {
+        error_log("=== INICIANDO CREACIÓN DE RESERVAS RECURRENTES ===");
+        
+        // Generar ID único para la serie recurrente
+        $serie_id = $this->generarUUID();
+        
+        // Extraer datos de la reserva base
+        $cliente_id = $datos_reserva['cliente_id'];
+        $sala_id = $datos_reserva['sala_id'];
+        $usuario_id = $datos_reserva['usuario_id'];
+        $fecha_inicio = new DateTime($datos_reserva['fecha_reserva']);
+        $hora_inicio = $datos_reserva['hora_inicio'];
+        $hora_fin = $datos_reserva['hora_fin'];
+        $horas_reservadas = $datos_reserva['horas_reservadas'];
+        $importe_total = $datos_reserva['importe_total'];
+        $tipo_recurrencia = $datos_reserva['tipo_recurrencia'];
+        $fecha_fin_recurrencia = new DateTime($datos_reserva['fecha_fin_recurrencia']);
+        $notas = $datos_reserva['notas'] ?? '';
+        
+        $reservas_creadas = [];
+        $reservas_con_conflicto = [];
+        $fecha_actual = clone $fecha_inicio;
+        $reserva_padre_id = null;
+        
+        error_log("Tipo de recurrencia: $tipo_recurrencia");
+        error_log("Desde: " . $fecha_inicio->format('Y-m-d') . " hasta: " . $fecha_fin_recurrencia->format('Y-m-d'));
+        
+        while ($fecha_actual <= $fecha_fin_recurrencia) {
+            $fecha_reserva_str = $fecha_actual->format('Y-m-d');
+            
+            // Verificar disponibilidad para esta fecha
+            $disponible = $this->verificarDisponibilidad($sala_id, $fecha_reserva_str, $hora_inicio, $hora_fin);
+            
+            if ($disponible) {
+                // Crear la reserva individual
+                $reserva_individual = new Reserva($this->conn);
+                $reserva_individual->cliente_id = $cliente_id;
+                $reserva_individual->sala_id = $sala_id;
+                $reserva_individual->usuario_id = $usuario_id;
+                $reserva_individual->fecha_reserva = $fecha_reserva_str;
+                $reserva_individual->hora_inicio = $hora_inicio;
+                $reserva_individual->hora_fin = $hora_fin;
+                $reserva_individual->horas_reservadas = $horas_reservadas;
+                $reserva_individual->estado = 'confirmada';
+                $reserva_individual->importe_total = $importe_total;
+                $reserva_individual->notas = $notas . " (Reserva recurrente - " . ucfirst($tipo_recurrencia) . ")";
+                $reserva_individual->estado_actual = 'pendiente';
+                $reserva_individual->es_recurrente = true;
+                $reserva_individual->tipo_recurrencia = $tipo_recurrencia;
+                $reserva_individual->fecha_fin_recurrencia = $datos_reserva['fecha_fin_recurrencia'];
+                $reserva_individual->serie_recurrencia_id = $serie_id;
+                
+                // La primera reserva no tiene padre, las demás sí
+                $reserva_individual->reserva_padre_id = $reserva_padre_id;
+                
+                if ($reserva_individual->crear()) {
+                    $nueva_reserva_id = $this->conn->lastInsertId();
+                    
+                    // Si es la primera reserva, se convierte en el padre de la serie
+                    if ($reserva_padre_id === null) {
+                        $reserva_padre_id = $nueva_reserva_id;
+                    }
+                    
+                    $reservas_creadas[] = [
+                        'id' => $nueva_reserva_id,
+                        'fecha' => $fecha_reserva_str,
+                        'hora_inicio' => $hora_inicio,
+                        'hora_fin' => $hora_fin
+                    ];
+                    
+                    error_log("✓ Reserva creada para fecha: $fecha_reserva_str");
+                } else {
+                    error_log("✗ Error creando reserva para fecha: $fecha_reserva_str");
+                }
+            } else {
+                $reservas_con_conflicto[] = [
+                    'fecha' => $fecha_reserva_str,
+                    'hora_inicio' => $hora_inicio,
+                    'hora_fin' => $hora_fin
+                ];
+                error_log("✗ Conflicto en fecha: $fecha_reserva_str");
+            }
+            
+            // Calcular siguiente fecha según el tipo de recurrencia
+            $fecha_actual = $this->calcularSiguienteFecha($fecha_actual, $tipo_recurrencia);
+        }
+        
+        error_log("=== FIN CREACIÓN DE RESERVAS RECURRENTES ===");
+        error_log("Total reservas creadas: " . count($reservas_creadas));
+        error_log("Total conflictos: " . count($reservas_con_conflicto));
+        
+        return [
+            'success' => count($reservas_creadas) > 0,
+            'serie_id' => $serie_id,
+            'reserva_padre_id' => $reserva_padre_id,
+            'reservas_creadas' => $reservas_creadas,
+            'conflictos' => $reservas_con_conflicto,
+            'total_creadas' => count($reservas_creadas),
+            'total_conflictos' => count($reservas_con_conflicto)
+        ];
+    }
+    
+    // Calcular siguiente fecha según tipo de recurrencia
+    private function calcularSiguienteFecha($fecha_actual, $tipo_recurrencia)
+    {
+        $siguiente = clone $fecha_actual;
+        
+        switch ($tipo_recurrencia) {
+            case 'semanal':
+                $siguiente->add(new DateInterval('P7D')); // +7 días
+                break;
+            case 'mensual':
+                $siguiente->add(new DateInterval('P1M')); // +1 mes
+                break;
+            case 'anual':
+                $siguiente->add(new DateInterval('P1Y')); // +1 año
+                break;
+        }
+        
+        return $siguiente;
+    }
+    
+    // Generar UUID simple para identificar series recurrentes
+    private function generarUUID()
+    {
+        return sprintf(
+            '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
+            mt_rand(0, 0xffff), mt_rand(0, 0xffff),
+            mt_rand(0, 0xffff),
+            mt_rand(0, 0x0fff) | 0x4000,
+            mt_rand(0, 0x3fff) | 0x8000,
+            mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff)
+        );
+    }
+    
+    // Eliminar serie completa de reservas recurrentes
+    public function eliminarSerieRecurrente($serie_recurrencia_id)
+    {
+        error_log("=== ELIMINANDO SERIE RECURRENTE: $serie_recurrencia_id ===");
+        
+        // Obtener todas las reservas de la serie
+        $query = "SELECT id, fecha_reserva, estado_actual 
+                  FROM " . $this->table_name . " 
+                  WHERE serie_recurrencia_id = :serie_id";
+                  
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(":serie_id", $serie_recurrencia_id);
+        $stmt->execute();
+        
+        $reservas_serie = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $eliminadas = 0;
+        $no_eliminables = 0;
+        
+        foreach ($reservas_serie as $reserva) {
+            // No eliminar reservas finalizadas
+            if (strtoupper($reserva['estado_actual']) === 'FINALIZADA') {
+                $no_eliminables++;
+                error_log("No se puede eliminar reserva finalizada ID: " . $reserva['id']);
+                continue;
+            }
+            
+            // Eliminar (soft delete) cada reserva de la serie
+            if ($this->eliminar($reserva['id'])) {
+                $eliminadas++;
+            }
+        }
+        
+        error_log("Serie eliminada - Eliminadas: $eliminadas, No eliminables: $no_eliminables");
+        
+        return [
+            'success' => $eliminadas > 0,
+            'eliminadas' => $eliminadas,
+            'no_eliminables' => $no_eliminables,
+            'total_serie' => count($reservas_serie)
+        ];
+    }
+    
+    // Obtener reservas de una serie recurrente
+    public function obtenerSerieRecurrente($serie_recurrencia_id)
+    {
+        $query = "SELECT 
+                    r.*,
+                    c.nombre_banda as cliente_nombre,
+                    c.contacto_nombre as contacto_nombre,
+                    s.nombre as sala_nombre
+                  FROM " . $this->table_name . " r
+                  LEFT JOIN clientes c ON r.cliente_id = c.id
+                  LEFT JOIN salas s ON r.sala_id = s.id
+                  WHERE r.serie_recurrencia_id = :serie_id
+                  ORDER BY r.fecha_reserva ASC";
+
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(":serie_id", $serie_recurrencia_id);
+        $stmt->execute();
+
+        return $stmt;
     }
 }
 ?>

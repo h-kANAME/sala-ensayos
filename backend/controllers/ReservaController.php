@@ -95,7 +95,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             "hora_salida" => $row['hora_salida'] ?? null,
             "importe_total" => (float)$row['importe_total'],
             "notas" => $row['notas'],
-            "fecha_creacion" => $row['fecha_creacion']
+            "fecha_creacion" => $row['fecha_creacion'],
+            "es_recurrente" => isset($row['es_recurrente']) ? (bool)$row['es_recurrente'] : false,
+            "tipo_recurrencia" => $row['tipo_recurrencia'] ?? null,
+            "fecha_fin_recurrencia" => $row['fecha_fin_recurrencia'] ?? null,
+            "reserva_padre_id" => $row['reserva_padre_id'] ?? null,
+            "serie_recurrencia_id" => $row['serie_recurrencia_id'] ?? null
         );
 
         array_push($reservas_arr, $reserva_item);
@@ -221,39 +226,101 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         error_log("Nuevo sistema - Tipo agrupación: $tipo_agrupacion, Duración: $duracion_horas horas, Precio: $importe_total");
 
-        // Asignar propiedades
-        $reserva->cliente_id = $data->cliente_id;
-        $reserva->sala_id = $data->sala_id;
-        $reserva->usuario_id = $data->usuario_id ?? 1; // Default a usuario admin
-        $reserva->fecha_reserva = $data->fecha_reserva;
-        $reserva->hora_inicio = $data->hora_inicio;
-        $reserva->hora_fin = $data->hora_fin;
-        $reserva->horas_reservadas = $horas_reservadas;
-        $reserva->estado = $data->estado ?? 'pendiente';
-        $reserva->importe_total = $importe_total;
-        $reserva->notas = $data->notas ?? '';
-        $reserva->estado_actual = 'pendiente'; // Estado inicial para check-in
-
-        // AGREGADO: Debug antes de crear
-        error_log("Intentando crear reserva con datos:");
-        error_log("Cliente ID: " . $reserva->cliente_id);
-        error_log("Sala ID: " . $reserva->sala_id);
-        error_log("Usuario ID: " . $reserva->usuario_id);
-
-        // Crear reserva
-        if ($reserva->crear()) {
-            error_log("Reserva creada exitosamente");
-            http_response_code(201);
-            echo json_encode(array(
-                "success" => true,
-                "message" => "Reserva creada exitosamente",
-                "importe_total" => $importe_total,
-                "horas_reservadas" => $horas_reservadas
-            ));
+        // Verificar si es una reserva recurrente
+        if (isset($data->es_recurrente) && $data->es_recurrente && 
+            !empty($data->tipo_recurrencia) && !empty($data->fecha_fin_recurrencia)) {
+            
+            error_log("=== PROCESANDO RESERVA RECURRENTE ===");
+            error_log("Tipo: " . $data->tipo_recurrencia);
+            error_log("Desde: " . $data->fecha_reserva . " hasta: " . $data->fecha_fin_recurrencia);
+            
+            // Preparar datos para reservas recurrentes
+            $datos_recurrentes = [
+                'cliente_id' => $data->cliente_id,
+                'sala_id' => $data->sala_id,
+                'usuario_id' => $data->usuario_id ?? 1,
+                'fecha_reserva' => $data->fecha_reserva,
+                'hora_inicio' => $data->hora_inicio,
+                'hora_fin' => $data->hora_fin,
+                'horas_reservadas' => $horas_reservadas,
+                'importe_total' => $importe_total,
+                'tipo_recurrencia' => $data->tipo_recurrencia,
+                'fecha_fin_recurrencia' => $data->fecha_fin_recurrencia,
+                'notas' => $data->notas ?? ''
+            ];
+            
+            // Crear serie de reservas recurrentes
+            $resultado = $reserva->crearReservasRecurrentes($datos_recurrentes);
+            
+            if ($resultado['success']) {
+                error_log("Serie de reservas recurrentes creada exitosamente");
+                error_log("Reservas creadas: " . $resultado['total_creadas']);
+                error_log("Conflictos: " . $resultado['total_conflictos']);
+                
+                http_response_code(201);
+                echo json_encode(array(
+                    "success" => true,
+                    "message" => "Serie de reservas recurrentes creada exitosamente",
+                    "serie_id" => $resultado['serie_id'],
+                    "reserva_padre_id" => $resultado['reserva_padre_id'],
+                    "total_creadas" => $resultado['total_creadas'],
+                    "total_conflictos" => $resultado['total_conflictos'],
+                    "reservas_creadas" => $resultado['reservas_creadas'],
+                    "conflictos" => $resultado['conflictos'],
+                    "importe_total" => $importe_total,
+                    "horas_reservadas" => $horas_reservadas
+                ));
+            } else {
+                error_log("Error al crear serie de reservas recurrentes");
+                http_response_code(503);
+                echo json_encode(array(
+                    "success" => false, 
+                    "message" => "No se pudo crear la serie de reservas recurrentes"
+                ));
+            }
         } else {
-            error_log("Error al crear reserva - Verificar método crear() en modelo Reserva");
-            http_response_code(503);
-            echo json_encode(array("message" => "No se pudo crear la reserva"));
+            // Reserva individual (comportamiento original)
+            // Asignar propiedades
+            $reserva->cliente_id = $data->cliente_id;
+            $reserva->sala_id = $data->sala_id;
+            $reserva->usuario_id = $data->usuario_id ?? 1; // Default a usuario admin
+            $reserva->fecha_reserva = $data->fecha_reserva;
+            $reserva->hora_inicio = $data->hora_inicio;
+            $reserva->hora_fin = $data->hora_fin;
+            $reserva->horas_reservadas = $horas_reservadas;
+            $reserva->estado = $data->estado ?? 'pendiente';
+            $reserva->importe_total = $importe_total;
+            $reserva->notas = $data->notas ?? '';
+            $reserva->estado_actual = 'pendiente'; // Estado inicial para check-in
+            
+            // Campos de recurrencia (todos null para reserva individual)
+            $reserva->es_recurrente = false;
+            $reserva->tipo_recurrencia = null;
+            $reserva->fecha_fin_recurrencia = null;
+            $reserva->reserva_padre_id = null;
+            $reserva->serie_recurrencia_id = null;
+
+            // AGREGADO: Debug antes de crear
+            error_log("Intentando crear reserva individual con datos:");
+            error_log("Cliente ID: " . $reserva->cliente_id);
+            error_log("Sala ID: " . $reserva->sala_id);
+            error_log("Usuario ID: " . $reserva->usuario_id);
+
+            // Crear reserva
+            if ($reserva->crear()) {
+                error_log("Reserva individual creada exitosamente");
+                http_response_code(201);
+                echo json_encode(array(
+                    "success" => true,
+                    "message" => "Reserva creada exitosamente",
+                    "importe_total" => $importe_total,
+                    "horas_reservadas" => $horas_reservadas
+                ));
+            } else {
+                error_log("Error al crear reserva - Verificar método crear() en modelo Reserva");
+                http_response_code(503);
+                echo json_encode(array("message" => "No se pudo crear la reserva"));
+            }
         }
     } else {
         error_log("Datos incompletos recibidos");

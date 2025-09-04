@@ -13,7 +13,10 @@ const FormularioReserva = ({ onReservaCreada, onReservaGuardada, onCancelar, fec
     hora_inicio: '',
     hora_fin: '',
     notas: '',
-    estado: 'pendiente'
+    estado: 'pendiente',
+    es_recurrente: false,
+    tipo_recurrencia: 'semanal',
+    fecha_fin_recurrencia: ''
   });
 
   // Estados para los datos
@@ -47,7 +50,10 @@ const FormularioReserva = ({ onReservaCreada, onReservaGuardada, onCancelar, fec
         hora_inicio: reservaEditando.hora_inicio || '',
         hora_fin: reservaEditando.hora_fin || '',
         notas: reservaEditando.notas || '',
-        estado: reservaEditando.estado || 'pendiente'
+        estado: reservaEditando.estado || 'pendiente',
+        es_recurrente: reservaEditando.es_recurrente || false,
+        tipo_recurrencia: reservaEditando.tipo_recurrencia || 'semanal',
+        fecha_fin_recurrencia: reservaEditando.fecha_fin_recurrencia || ''
       });
     }
   }, [reservaEditando]);
@@ -268,7 +274,20 @@ const FormularioReserva = ({ onReservaCreada, onReservaGuardada, onCancelar, fec
         setSuccess('Reserva actualizada exitosamente');
       } else {
         resultado = await reservasService.crear(datosReserva);
-        setSuccess('Reserva creada exitosamente');
+        
+        // Mensaje específico para reservas recurrentes
+        if (formData.es_recurrente && resultado.data) {
+          const { total_creadas, total_conflictos } = resultado.data;
+          if (total_creadas > 0 && total_conflictos > 0) {
+            setSuccess(`✅ Serie recurrente creada: ${total_creadas} reservas creadas, ${total_conflictos} fechas con conflictos omitidas`);
+          } else if (total_creadas > 0) {
+            setSuccess(`✅ Serie recurrente creada exitosamente: ${total_creadas} reservas generadas`);
+          } else {
+            setSuccess('⚠️ No se pudieron crear reservas recurrentes por conflictos de disponibilidad');
+          }
+        } else {
+          setSuccess('Reserva creada exitosamente');
+        }
       }
       
       console.log(`✅ Reserva ${esEdicion ? 'actualizada' : 'creada'}:`, resultado);
@@ -282,7 +301,10 @@ const FormularioReserva = ({ onReservaCreada, onReservaGuardada, onCancelar, fec
           hora_inicio: '',
           hora_fin: '',
           notas: '',
-          estado: 'pendiente'
+          estado: 'pendiente',
+          es_recurrente: false,
+          tipo_recurrencia: 'semanal',
+          fecha_fin_recurrencia: ''
         });
       }
 
@@ -372,6 +394,80 @@ const FormularioReserva = ({ onReservaCreada, onReservaGuardada, onCancelar, fec
             required
           />
         </div>
+
+        <div className="form-group recurring-section">
+          <label className="checkbox-label">
+            <input
+              type="checkbox"
+              name="es_recurrente"
+              checked={formData.es_recurrente}
+              onChange={(e) => setFormData(prev => ({
+                ...prev,
+                es_recurrente: e.target.checked,
+                // Limpiar campos si se desmarca
+                ...(e.target.checked ? {} : {
+                  tipo_recurrencia: 'semanal',
+                  fecha_fin_recurrencia: ''
+                })
+              }))}
+            />
+            🔄 Reserva Recurrente
+          </label>
+          <small className="form-hint">
+            Marcar esta opción para crear una serie de reservas que se repiten
+          </small>
+        </div>
+
+        {formData.es_recurrente && (
+          <div className="recurring-options">
+            <div className="form-group">
+              <label htmlFor="tipo_recurrencia">Tipo de Repetición:</label>
+              <select
+                id="tipo_recurrencia"
+                name="tipo_recurrencia"
+                value={formData.tipo_recurrencia}
+                onChange={handleInputChange}
+                required={formData.es_recurrente}
+              >
+                <option value="semanal">📅 Semanal (cada 7 días)</option>
+                <option value="mensual">📆 Mensual (mismo día cada mes)</option>
+                <option value="anual">🗓️ Anual (misma fecha cada año)</option>
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="fecha_fin_recurrencia">Repetir hasta:</label>
+              <input
+                type="date"
+                id="fecha_fin_recurrencia"
+                name="fecha_fin_recurrencia"
+                value={formData.fecha_fin_recurrencia}
+                onChange={handleInputChange}
+                min={formData.fecha_reserva}
+                required={formData.es_recurrente}
+              />
+              <small className="form-hint">
+                Las reservas se crearán desde la fecha inicial hasta esta fecha
+              </small>
+            </div>
+
+            {formData.fecha_reserva && formData.fecha_fin_recurrencia && (
+              <div className="recurring-preview">
+                <h4>📋 Vista previa de repetición:</h4>
+                <p><strong>Tipo:</strong> {
+                  formData.tipo_recurrencia === 'semanal' ? 'Cada semana' :
+                  formData.tipo_recurrencia === 'mensual' ? 'Cada mes' :
+                  'Cada año'
+                }</p>
+                <p><strong>Desde:</strong> {new Date(formData.fecha_reserva + 'T00:00:00').toLocaleDateString('es-ES')}</p>
+                <p><strong>Hasta:</strong> {new Date(formData.fecha_fin_recurrencia + 'T00:00:00').toLocaleDateString('es-ES')}</p>
+                <small className="form-hint">
+                  Se validará la disponibilidad para cada fecha y se crearán solo las reservas sin conflictos
+                </small>
+              </div>
+            )}
+          </div>
+        )}
 
         <div className="form-group formato-hora">
           <label>Formato de Hora:</label>
