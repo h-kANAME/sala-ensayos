@@ -1,174 +1,157 @@
 import React from 'react';
+import { Calendar, momentLocalizer } from 'react-big-calendar';
+import moment from 'moment';
+import 'moment/locale/es';
+import 'react-big-calendar/lib/css/react-big-calendar.css';
+
+// Configurar moment en español
+moment.locale('es');
+const localizer = momentLocalizer(moment);
 
 const MonthGrid = ({ fechaActual, reservas, salaSeleccionada, onDayClick }) => {
-  // Obtener primer y último día del mes
-  const primerDiaDelMes = new Date(fechaActual.getFullYear(), fechaActual.getMonth(), 1);
-  const ultimoDiaDelMes = new Date(fechaActual.getFullYear(), fechaActual.getMonth() + 1, 0);
   
-  // Obtener día de la semana del primer día (0 = domingo)
-  const primerDiaSemana = primerDiaDelMes.getDay();
-  
-  // Crear array de días para mostrar
-  const diasCalendario = [];
-  
-  // Días del mes anterior (para completar primera semana)
-  const mesAnterior = new Date(fechaActual.getFullYear(), fechaActual.getMonth(), 0);
-  for (let i = primerDiaSemana - 1; i >= 0; i--) {
-    const dia = new Date(mesAnterior);
-    dia.setDate(mesAnterior.getDate() - i);
-    diasCalendario.push({
-      fecha: new Date(dia),
-      esMesActual: false
-    });
-  }
-  
-  // Días del mes actual
-  for (let dia = 1; dia <= ultimoDiaDelMes.getDate(); dia++) {
-    const fecha = new Date(fechaActual.getFullYear(), fechaActual.getMonth(), dia);
-    diasCalendario.push({
-      fecha,
-      esMesActual: true
-    });
-  }
-  
-  // Días del próximo mes (para completar última semana)
-  const diasRestantes = 42 - diasCalendario.length; // 6 semanas * 7 días
-  for (let dia = 1; dia <= diasRestantes; dia++) {
-    const fecha = new Date(fechaActual.getFullYear(), fechaActual.getMonth() + 1, dia);
-    diasCalendario.push({
-      fecha,
-      esMesActual: false
-    });
-  }
-
-  // Función para obtener reservas de un día específico
-  const obtenerReservasDelDia = (fecha) => {
-    const fechaStr = fecha.toISOString().split('T')[0];
-    return reservas.filter(reserva => reserva.fecha_reserva === fechaStr);
-  };
-
-  // Función para determinar el estado de ocupación de un día
-  const obtenerEstadoDia = (fecha) => {
-    const reservasDelDia = obtenerReservasDelDia(fecha);
+  // Convertir reservas al formato que espera React Big Calendar
+  const eventos = reservas.map((reserva, index) => {
+    const fechaReserva = new Date(reserva.fecha_reserva + 'T00:00:00');
+    const horaInicio = reserva.hora_inicio.split(':');
+    const horaFin = reserva.hora_fin.split(':');
     
-    if (reservasDelDia.length === 0) {
-      return 'disponible';
+    const start = new Date(fechaReserva);
+    start.setHours(parseInt(horaInicio[0]), parseInt(horaInicio[1]), 0);
+    
+    const end = new Date(fechaReserva);
+    end.setHours(parseInt(horaFin[0]), parseInt(horaFin[1]), 0);
+    
+    return {
+      id: reserva.id || index,
+      title: `${reserva.cliente_nombre} - ${reserva.hora_inicio.substring(0, 5)}`,
+      start: start,
+      end: end,
+      resource: {
+        reserva: reserva,
+        estado: reserva.estado_actual
+      }
+    };
+  });
+
+  // Personalizar estilos de eventos según estado
+  const eventStyleGetter = (event) => {
+    const { estado } = event.resource;
+    let style = {
+      fontSize: '12px',
+      padding: '2px 4px',
+      borderRadius: '3px',
+      border: 'none'
+    };
+
+    switch (estado) {
+      case 'presente':
+        style.backgroundColor = '#28a745';
+        style.color = 'white';
+        break;
+      case 'pendiente':
+        style.backgroundColor = '#ffc107';
+        style.color = '#000';
+        break;
+      case 'ausente':
+        style.backgroundColor = '#dc3545';
+        style.color = 'white';
+        break;
+      case 'finalizada':
+        style.backgroundColor = '#17a2b8';
+        style.color = 'white';
+        break;
+      default:
+        style.backgroundColor = '#6c757d';
+        style.color = 'white';
     }
-    
-    // Calcular horas ocupadas (aproximado)
-    const horasOcupadas = reservasDelDia.reduce((total, reserva) => {
-      const inicio = new Date(`2000-01-01T${reserva.hora_inicio}`);
-      const fin = new Date(`2000-01-01T${reserva.hora_fin}`);
-      const duracion = (fin - inicio) / (1000 * 60 * 60); // Horas
-      return total + duracion;
-    }, 0);
-    
-    if (horasOcupadas >= 8) {
-      return 'ocupado';
-    } else if (horasOcupadas >= 4) {
-      return 'parcial';
-    } else {
-      return 'disponible';
-    }
+
+    return { style };
   };
 
-  const esHoy = (fecha) => {
-    const hoy = new Date();
-    return fecha.toDateString() === hoy.toDateString();
+  // Manejar click en día vacío
+  const handleSelectSlot = ({ start }) => {
+    onDayClick(start);
   };
 
-  const esPasado = (fecha) => {
-    const hoy = new Date();
-    hoy.setHours(0, 0, 0, 0);
-    return fecha < hoy;
+  // Manejar click en evento
+  const handleSelectEvent = (event) => {
+    onDayClick(event.start);
   };
 
-  const diasSemana = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+  // Mensajes en español
+  const messages = {
+    allDay: 'Todo el día',
+    previous: '◀',
+    next: '▶',
+    today: 'Hoy',
+    month: 'Mes',
+    week: 'Semana',
+    day: 'Día',
+    agenda: 'Agenda',
+    date: 'Fecha',
+    time: 'Hora',
+    event: 'Evento',
+    noEventsInRange: 'No hay reservas en este período',
+    showMore: (total) => `+${total} más`
+  };
 
   return (
-    <div className="month-grid">
-      {/* Header con días de la semana */}
-      <div className="dias-semana-header">
-        {diasSemana.map(dia => (
-          <div key={dia} className="dia-semana-label">
-            {dia}
-          </div>
-        ))}
-      </div>
-
-      {/* Grid de días */}
-      <div className="calendario-grid">
-        {diasCalendario.map((item, index) => {
-          const reservasDelDia = obtenerReservasDelDia(item.fecha);
-          const estadoDia = obtenerEstadoDia(item.fecha);
+    <div className="month-grid-calendar">
+      <Calendar
+        localizer={localizer}
+        events={eventos}
+        date={fechaActual}
+        onNavigate={(date) => {
+          // Actualizar fecha cuando naveguen
+          const event = new Event('calendar-navigate');
+          event.detail = { date };
+          window.dispatchEvent(event);
+        }}
+        view="month"
+        views={['month']}
+        style={{ height: 600 }}
+        eventPropGetter={eventStyleGetter}
+        onSelectSlot={handleSelectSlot}
+        onSelectEvent={handleSelectEvent}
+        selectable={true}
+        popup={true}
+        messages={messages}
+        dayPropGetter={(date) => {
+          const today = new Date();
+          const isToday = date.toDateString() === today.toDateString();
           
-          return (
-            <div
-              key={index}
-              className={`dia-celda ${
-                item.esMesActual ? 'mes-actual' : 'mes-otro'
-              } ${estadoDia} ${
-                esHoy(item.fecha) ? 'hoy' : ''
-              } ${
-                esPasado(item.fecha) ? 'pasado' : ''
-              }`}
-              onClick={() => item.esMesActual && onDayClick(item.fecha)}
-            >
-              <div className="dia-numero">
-                {item.fecha.getDate()}
-              </div>
-              
-              {item.esMesActual && reservasDelDia.length > 0 && (
-                <div className="reservas-indicador">
-                  <div className="reservas-count">
-                    {reservasDelDia.length} reserva{reservasDelDia.length !== 1 ? 's' : ''}
-                  </div>
-                  <div className="reservas-preview">
-                    {reservasDelDia.slice(0, 2).map((reserva, idx) => (
-                      <div key={idx} className={`reserva-mini estado-${reserva.estado_actual}`}>
-                        <span className="hora-mini">
-                          {reserva.hora_inicio.substring(0, 5)} - {reserva.hora_fin.substring(0, 5)}
-                        </span>
-                      </div>
-                    ))}
-                    {reservasDelDia.length > 2 && (
-                      <div className="mas-reservas">
-                        +{reservasDelDia.length - 2}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-              
-              {item.esMesActual && reservasDelDia.length === 0 && !esPasado(item.fecha) && (
-                <div className="dia-disponible-hint">
-                  Click para ver
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
-
+          if (isToday) {
+            return {
+              style: {
+                backgroundColor: '#fff3cd',
+                border: '2px solid #ffc107'
+              }
+            };
+          }
+          return {};
+        }}
+      />
+      
       {/* Leyenda */}
       <div className="calendario-leyenda">
-        <h4>Leyenda:</h4>
+        <h4>Estados de Reservas:</h4>
         <div className="leyenda-items">
           <div className="leyenda-item">
-            <div className="color-muestra disponible"></div>
-            <span>Disponible</span>
+            <div className="color-muestra" style={{backgroundColor: '#ffc107'}}></div>
+            <span>Pendiente</span>
           </div>
           <div className="leyenda-item">
-            <div className="color-muestra parcial"></div>
-            <span>Parcialmente ocupado</span>
+            <div className="color-muestra" style={{backgroundColor: '#28a745'}}></div>
+            <span>Presente</span>
           </div>
           <div className="leyenda-item">
-            <div className="color-muestra ocupado"></div>
-            <span>Muy ocupado</span>
+            <div className="color-muestra" style={{backgroundColor: '#dc3545'}}></div>
+            <span>Ausente</span>
           </div>
           <div className="leyenda-item">
-            <div className="color-muestra hoy"></div>
-            <span>Hoy</span>
+            <div className="color-muestra" style={{backgroundColor: '#17a2b8'}}></div>
+            <span>Finalizada</span>
           </div>
         </div>
       </div>

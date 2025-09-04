@@ -5,7 +5,8 @@
       "Bash(sed:*)",
       "Bash(curl:*)",
       "Bash(php:*)",
-      "Bash(del:*)"
+      "Bash(del:*)",
+      "Bash(npm install:*)"
     ],
     "deny": [],
     "ask": []

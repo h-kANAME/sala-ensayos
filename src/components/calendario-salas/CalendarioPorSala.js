@@ -29,6 +29,16 @@ const CalendarioPorSala = () => {
     }
   }, [salaSeleccionada, fechaActual]);
 
+  // Escuchar eventos de navegación del calendario
+  useEffect(() => {
+    const handleCalendarNavigate = (event) => {
+      setFechaActual(event.detail.date);
+    };
+
+    window.addEventListener('calendar-navigate', handleCalendarNavigate);
+    return () => window.removeEventListener('calendar-navigate', handleCalendarNavigate);
+  }, []);
+
   const cargarSalas = async () => {
     try {
       console.log('🏠 Cargando salas...');

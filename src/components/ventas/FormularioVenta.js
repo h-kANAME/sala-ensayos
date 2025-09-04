@@ -140,7 +140,21 @@ const FormularioVenta = ({ onVentaCreada, onCancelar }) => {
     };
 
     const actualizarCantidadItem = (index, nuevaCantidad) => {
-        if (nuevaCantidad <= 0) {
+        // Permitir cadena vacía para que el usuario pueda borrar y escribir
+        if (nuevaCantidad === '' || nuevaCantidad === '0') {
+            setFormData(prev => ({
+                ...prev,
+                items: prev.items.map((item, i) =>
+                    i === index ? { ...item, cantidad: nuevaCantidad === '' ? '' : parseInt(nuevaCantidad) } : item
+                )
+            }));
+            return;
+        }
+
+        const cantidad = parseInt(nuevaCantidad);
+        
+        // Solo eliminar si es explícitamente negativo (no cuando está vacío)
+        if (cantidad < 0) {
             eliminarItem(index);
             return;
         }
@@ -148,7 +162,7 @@ const FormularioVenta = ({ onVentaCreada, onCancelar }) => {
         setFormData(prev => ({
             ...prev,
             items: prev.items.map((item, i) =>
-                i === index ? { ...item, cantidad: parseInt(nuevaCantidad) || 1 } : item
+                i === index ? { ...item, cantidad: cantidad || 1 } : item
             )
         }));
     };
@@ -171,7 +185,9 @@ const FormularioVenta = ({ onVentaCreada, onCancelar }) => {
 
     const calcularTotal = () => {
         return formData.items.reduce((total, item) => {
-            return total + (item.cantidad * item.precio_unitario);
+            const cantidad = parseFloat(item.cantidad) || 0;
+            const precio = parseFloat(item.precio_unitario) || 0;
+            return total + (cantidad * precio);
         }, 0);
     };
 
@@ -256,15 +272,23 @@ const FormularioVenta = ({ onVentaCreada, onCancelar }) => {
             setLoading(true);
             setError('');
 
+            // Validar que todos los items tengan cantidad válida
+            const itemsValidados = formData.items.map(item => {
+                const cantidad = parseInt(item.cantidad) || 1;
+                const precio = parseFloat(item.precio_unitario) || 0;
+                
+                return {
+                    producto_id: item.producto_id,
+                    cantidad: cantidad,
+                    precio_unitario: precio
+                };
+            });
+
             const ventaData = {
                 ...formData,
                 total: calcularTotal(),
                 permitir_negativo: permitirNegativo,
-                items: formData.items.map(item => ({
-                    producto_id: item.producto_id,
-                    cantidad: item.cantidad,
-                    precio_unitario: item.precio_unitario
-                }))
+                items: itemsValidados
             };
 
             // Debug: Mostrar datos que se van a enviar
