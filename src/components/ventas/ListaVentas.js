@@ -126,6 +126,17 @@ const ListaVentas = () => {
         }).format(cantidad);
     };
 
+    const formatearTipoPago = (venta) => {
+        if (venta.tipo_pago === 'mixto') {
+            const efectivo = formatearMoneda(venta.monto_efectivo || 0);
+            const transferencia = formatearMoneda(venta.monto_transferencia || 0);
+            return `Mixto (E: ${efectivo} - T: ${transferencia})`;
+        }
+        
+        // Capitalizar primera letra
+        return venta.tipo_pago.charAt(0).toUpperCase() + venta.tipo_pago.slice(1);
+    };
+
     if (loading) return <div className="loading">Cargando ventas...</div>;
     if (error) return <div className="error">Error: {error}</div>;
 
@@ -173,8 +184,8 @@ const ListaVentas = () => {
                                     <td>{venta.usuario_nombre || 'Usuario no encontrado'}</td>
                                     <td className="total">{formatearMoneda(venta.total)}</td>
                                     <td>
-                                        <span className={`tipo-pago ${venta.tipo_pago}`}>
-                                            {venta.tipo_pago}
+                                        <span className={`tipo-pago ${venta.tipo_pago}`} title={formatearTipoPago(venta)}>
+                                            {formatearTipoPago(venta)}
                                         </span>
                                     </td>
                                     <td>
@@ -254,9 +265,19 @@ const ListaVentas = () => {
                                     </div>
                                     <div className="info-item">
                                         <label>Tipo de Pago:</label>
-                                        <span className={`tipo-pago ${detalleVenta.tipo_pago}`}>
-                                            {detalleVenta.tipo_pago}
-                                        </span>
+                                        <div className="pago-detalle">
+                                            <span className={`tipo-pago ${detalleVenta.tipo_pago}`}>
+                                                {formatearTipoPago(detalleVenta)}
+                                            </span>
+                                            {detalleVenta.tipo_pago === 'mixto' && (
+                                                <div className="pago-mixto-detalle">
+                                                    <small>
+                                                        Efectivo: {formatearMoneda(detalleVenta.monto_efectivo || 0)}<br/>
+                                                        Transferencia: {formatearMoneda(detalleVenta.monto_transferencia || 0)}
+                                                    </small>
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
                                     <div className="info-item">
                                         <label>Estado:</label>

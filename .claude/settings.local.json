@@ -3,7 +3,9 @@
     "allow": [
       "Bash(docker exec:*)",
       "Bash(sed:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(php:*)",
+      "Bash(del:*)"
     ],
     "deny": [],
     "ask": []

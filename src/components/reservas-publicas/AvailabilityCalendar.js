@@ -109,8 +109,7 @@ const AvailabilityCalendar = ({ selectedBand, onSlotSelected, onBack, loading, e
     
     const slotWithDetails = {
       ...slot,
-      sala_nombre: selectedSala.nombre,
-      tarifa_hora: selectedSala.tarifa_hora
+      sala_nombre: selectedSala.nombre
     };
     
     onSlotSelected(slotWithDetails);
@@ -140,7 +139,6 @@ const AvailabilityCalendar = ({ selectedBand, onSlotSelected, onBack, loading, e
                 <p className="sala-description">{sala.descripcion}</p>
                 <div className="sala-details">
                   <span className="capacity">👥 {sala.capacidad} personas</span>
-                  <span className="price">💰 ${sala.tarifa_hora}/hora</span>
                 </div>
                 {sala.equipamiento && (
                   <p className="equipment">🎵 {sala.equipamiento}</p>
@@ -212,9 +210,6 @@ const AvailabilityCalendar = ({ selectedBand, onSlotSelected, onBack, loading, e
                     >
                       <div className="slot-time">
                         {formatTime(slot.hora_inicio)} - {formatTime(slot.hora_fin)}
-                      </div>
-                      <div className="slot-price">
-                        ${selectedSala.tarifa_hora}
                       </div>
                     </button>
                   ))

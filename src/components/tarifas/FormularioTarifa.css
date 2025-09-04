@@ -1,0 +1,342 @@
+.formulario-tarifa {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 30px;
+}
+
+.formulario-header {
+    text-align: center;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.formulario-header h3 {
+    color: #2c3e50;
+    margin-bottom: 10px;
+    font-size: 1.8rem;
+}
+
+.formulario-header p {
+    color: #6c757d;
+    font-size: 1rem;
+    margin: 0;
+}
+
+.tarifa-form {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+/* Campos principales */
+.campos-principales {
+    background: #f8f9fa;
+    padding: 25px;
+    border-radius: 12px;
+    border-left: 4px solid #667eea;
+}
+
+.duracion-campos {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.campo-grupo {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.campo-grupo label {
+    font-weight: 600;
+    color: #2c3e50;
+    font-size: 0.95rem;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.campo-ayuda {
+    font-weight: 400;
+    font-size: 0.8rem;
+    color: #6c757d;
+    font-style: italic;
+}
+
+.campo-grupo input, 
+.campo-grupo select {
+    padding: 12px 15px;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: white;
+}
+
+.campo-grupo input:focus, 
+.campo-grupo select:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.campo-grupo input.error, 
+.campo-grupo select.error {
+    border-color: #dc3545;
+    background-color: #fff5f5;
+}
+
+.error-message {
+    color: #dc3545;
+    font-size: 0.85rem;
+    font-weight: 500;
+    margin-top: 5px;
+}
+
+/* Sección de precios */
+.precio-seccion {
+    background: #fff3cd;
+    padding: 25px;
+    border-radius: 12px;
+    border-left: 4px solid #ffc107;
+}
+
+.precio-seccion h4 {
+    margin-bottom: 20px;
+    color: #2c3e50;
+    font-size: 1.3rem;
+}
+
+.tipo-precio-selector {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 25px;
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+}
+
+.tipo-precio-selector label {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    cursor: pointer;
+    padding: 10px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.tipo-precio-selector label:hover {
+    background: #f8f9fa;
+}
+
+.tipo-precio-selector input[type="radio"] {
+    margin: 0;
+    width: 18px;
+    height: 18px;
+    accent-color: #667eea;
+}
+
+.radio-label {
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 2px;
+}
+
+.tipo-precio-selector small {
+    color: #6c757d;
+    font-size: 0.85rem;
+    display: block;
+}
+
+/* Sección de estado */
+.estado-seccion {
+    background: #d1ecf1;
+    padding: 25px;
+    border-radius: 12px;
+    border-left: 4px solid #17a2b8;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    cursor: pointer;
+    position: relative;
+}
+
+.checkbox-label input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    accent-color: #17a2b8;
+    margin: 0;
+}
+
+.checkbox-text {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.checkbox-text small {
+    color: #6c757d;
+    font-size: 0.85rem;
+}
+
+/* Acciones del formulario */
+.formulario-acciones {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #e9ecef;
+}
+
+.btn-cancelar, .btn-guardar {
+    padding: 15px 30px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 140px;
+}
+
+.btn-cancelar {
+    background: #6c757d;
+    color: white;
+}
+
+.btn-cancelar:hover:not(:disabled) {
+    background: #5a6268;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
+}
+
+.btn-guardar {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+}
+
+.btn-guardar:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.4);
+}
+
+.btn-guardar:disabled, .btn-cancelar:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .formulario-tarifa {
+        padding: 20px;
+    }
+    
+    .formulario-header h3 {
+        font-size: 1.5rem;
+    }
+    
+    .duracion-campos {
+        grid-template-columns: 1fr;
+    }
+    
+    .campos-principales,
+    .precio-seccion,
+    .estado-seccion {
+        padding: 20px;
+    }
+    
+    .formulario-acciones {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .btn-cancelar, .btn-guardar {
+        width: 100%;
+        max-width: 300px;
+    }
+}
+
+/* Animaciones */
+.formulario-tarifa {
+    animation: slideInUp 0.4s ease-out;
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.campos-principales,
+.precio-seccion,
+.estado-seccion {
+    animation: fadeIn 0.6s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* Estados de validación */
+.campo-grupo input:valid {
+    border-color: #28a745;
+}
+
+.campo-grupo input:invalid:not(:placeholder-shown) {
+    border-color: #dc3545;
+}
+
+/* Efectos visuales */
+.precio-seccion, 
+.campos-principales, 
+.estado-seccion {
+    position: relative;
+    overflow: hidden;
+}
+
+.precio-seccion::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #ffc107, #fd7e14);
+}
+
+.campos-principales::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+}
+
+.estado-seccion::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #17a2b8, #138496);
+}

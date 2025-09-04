@@ -13,6 +13,8 @@ const FormularioVenta = ({ onVentaCreada, onCancelar }) => {
         cliente_id: '',
         usuario_id: user?.id || '',
         tipo_pago: 'efectivo',
+        monto_efectivo: null,
+        monto_transferencia: null,
         notas: '',
         items: []
     });
@@ -75,9 +77,30 @@ const FormularioVenta = ({ onVentaCreada, onCancelar }) => {
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
+        
+        // Si cambia el tipo de pago, resetear los montos
+        if (name === 'tipo_pago') {
+            setFormData(prev => ({
+                ...prev,
+                [name]: value,
+                monto_efectivo: value === 'mixto' ? 0 : null,
+                monto_transferencia: value === 'mixto' ? 0 : null
+            }));
+        } else {
+            setFormData(prev => ({
+                ...prev,
+                [name]: value
+            }));
+        }
+        
+        setError('');
+    };
+
+    const handleMontoChange = (campo, valor) => {
+        const monto = parseFloat(valor) || 0;
         setFormData(prev => ({
             ...prev,
-            [name]: value
+            [campo]: monto
         }));
         setError('');
     };
@@ -152,6 +175,30 @@ const FormularioVenta = ({ onVentaCreada, onCancelar }) => {
         }, 0);
     };
 
+    const validarPago = () => {
+        const total = calcularTotal();
+        
+        if (formData.tipo_pago === 'mixto') {
+            const efectivo = parseFloat(formData.monto_efectivo) || 0;
+            const transferencia = parseFloat(formData.monto_transferencia) || 0;
+            
+            if (efectivo <= 0 || transferencia <= 0) {
+                return 'Los montos de pago mixto deben ser mayores a cero';
+            }
+            
+            const suma = efectivo + transferencia;
+            if (Math.abs(suma - total) > 0.01) {
+                return 'La suma de efectivo y transferencia debe ser igual al total';
+            }
+            
+            if (suma > total) {
+                return 'La suma de los montos no puede superar el total a cobrar';
+            }
+        }
+        
+        return null;
+    };
+
     const verificarStock = async () => {
         if (formData.items.length === 0) {
             setError('Debe agregar al menos un producto');
@@ -192,6 +239,13 @@ const FormularioVenta = ({ onVentaCreada, onCancelar }) => {
             return;
         }
 
+        // Validar pago
+        const errorPago = validarPago();
+        if (errorPago) {
+            setError(errorPago);
+            return;
+        }
+
         // Verificar stock si no se permite negativo
         if (!permitirNegativo) {
             const stockOk = await verificarStock();
@@ -212,6 +266,9 @@ const FormularioVenta = ({ onVentaCreada, onCancelar }) => {
                     precio_unitario: item.precio_unitario
                 }))
             };
+
+            // Debug: Mostrar datos que se van a enviar
+            console.log('🚀 Enviando datos de venta:', ventaData);
 
             const response = await ventasService.crearVenta(ventaData);
             
@@ -304,10 +361,73 @@ const FormularioVenta = ({ onVentaCreada, onCancelar }) => {
                                 required
                             >
                                 <option value="efectivo">Efectivo</option>
-                                {/* <option value="tarjeta">Tarjeta</option> */}
                                 <option value="transferencia">Transferencia</option>
+                                <option value="mixto">Mixto</option>
                             </select>
                         </div>
+
+                        {/* Campos para pago mixto */}
+                        {formData.tipo_pago === 'mixto' && (
+                            <>
+                                <div className="form-group">
+                                    <label htmlFor="monto_efectivo">Monto Efectivo *</label>
+                                    <input
+                                        type="number"
+                                        id="monto_efectivo"
+                                        name="monto_efectivo"
+                                        value={formData.monto_efectivo || ''}
+                                        onChange={(e) => handleMontoChange('monto_efectivo', e.target.value)}
+                                        min="0"
+                                        step="0.01"
+                                        max={calcularTotal()}
+                                        required
+                                        placeholder="0.00"
+                                    />
+                                </div>
+                                
+                                <div className="form-group">
+                                    <label htmlFor="monto_transferencia">Monto Transferencia *</label>
+                                    <input
+                                        type="number"
+                                        id="monto_transferencia"
+                                        name="monto_transferencia"
+                                        value={formData.monto_transferencia || ''}
+                                        onChange={(e) => handleMontoChange('monto_transferencia', e.target.value)}
+                                        min="0"
+                                        step="0.01"
+                                        max={calcularTotal()}
+                                        required
+                                        placeholder="0.00"
+                                    />
+                                </div>
+                                
+                                <div className="pago-mixto-resumen">
+                                    <div className="resumen-row">
+                                        <span>Total a cobrar:</span>
+                                        <span className="total-amount">{formatearMoneda(calcularTotal())}</span>
+                                    </div>
+                                    <div className="resumen-row">
+                                        <span>Efectivo:</span>
+                                        <span>{formatearMoneda(parseFloat(formData.monto_efectivo) || 0)}</span>
+                                    </div>
+                                    <div className="resumen-row">
+                                        <span>Transferencia:</span>
+                                        <span>{formatearMoneda(parseFloat(formData.monto_transferencia) || 0)}</span>
+                                    </div>
+                                    <hr />
+                                    <div className="resumen-row total-row">
+                                        <span>Total ingresado:</span>
+                                        <span className={
+                                            Math.abs((parseFloat(formData.monto_efectivo) || 0) + (parseFloat(formData.monto_transferencia) || 0) - calcularTotal()) <= 0.01 
+                                                ? 'total-correcto' 
+                                                : 'total-incorrecto'
+                                        }>
+                                            {formatearMoneda((parseFloat(formData.monto_efectivo) || 0) + (parseFloat(formData.monto_transferencia) || 0))}
+                                        </span>
+                                    </div>
+                                </div>
+                            </>
+                        )}
                     </div>
 
                     <div className="form-group">

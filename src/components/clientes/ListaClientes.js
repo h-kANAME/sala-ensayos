@@ -63,6 +63,7 @@ const ListaClientes = () => {
                             <th>ID</th>
                             <th>Nombre de Banda</th>
                             <th>Contacto</th>
+                            <th>Tipo</th>
                             <th>Email</th>
                             <th>Teléfono</th>
                             <th>Acciones</th>
@@ -75,6 +76,11 @@ const ListaClientes = () => {
                                     <td>{cliente.id}</td>
                                     <td>{cliente.nombre_banda}</td>
                                     <td>{cliente.contacto_nombre}</td>
+                                    <td>
+                                        <span className={`badge ${cliente.tipo_agrupacion === 'Extended' ? 'badge-extended' : 'badge-standard'}`}>
+                                            {cliente.tipo_agrupacion || 'Standard'}
+                                        </span>
+                                    </td>
                                     <td>{cliente.contacto_email || '-'}</td>
                                     <td>{cliente.contacto_telefono || '-'}</td>
                                     <td>
@@ -97,7 +103,7 @@ const ListaClientes = () => {
                             ))
                         ) : (
                             <tr>
-                                <td colSpan="6" style={{ textAlign: 'center', padding: '2rem', color: '#666' }}>
+                                <td colSpan="7" style={{ textAlign: 'center', padding: '2rem', color: '#666' }}>
                                     {error ? 'Error cargando clientes' : 'No hay clientes registrados'}
                                 </td>
                             </tr>

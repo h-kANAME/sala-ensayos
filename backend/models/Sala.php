@@ -8,7 +8,6 @@ class Sala {
     public $descripcion;
     public $capacidad;
     public $equipamiento;
-    public $tarifa_hora;
     public $activa;
 
     public function __construct($db) {

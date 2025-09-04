@@ -13,6 +13,7 @@ const FormularioCliente = () => {
         contacto_nombre: '',
         contacto_email: '',
         contacto_telefono: '',
+        tipo_agrupacion: 'Standard',
         direccion: '',
         notas: ''
     });
@@ -112,6 +113,24 @@ const FormularioCliente = () => {
                         value={formData.contacto_telefono}
                         onChange={handleChange}
                     />
+                </div>
+
+                <div className="form-group">
+                    <label>Tipo Agrupación *:</label>
+                    <select
+                        name="tipo_agrupacion"
+                        value={formData.tipo_agrupacion}
+                        onChange={handleChange}
+                        required
+                        className="form-select"
+                    >
+                        <option value="Standard">Standard (1-5 integrantes)</option>
+                        <option value="Extended">Extended (6+ integrantes)</option>
+                    </select>
+                    <small className="form-help">
+                        Standard: Tarifas para bandas de 1 a 5 integrantes<br/>
+                        Extended: Tarifas para bandas de 6 o más integrantes
+                    </small>
                 </div>
 
                 <div className="form-group">

@@ -28,7 +28,8 @@
 }
 
 .form-group input,
-.form-group textarea {
+.form-group textarea,
+.form-group select {
     width: 100%;
     padding: 12px 15px;
     border: 2px solid #e9ecef;
@@ -37,13 +38,34 @@
     transition: border-color 0.3s, box-shadow 0.3s;
     font-family: inherit;
     box-sizing: border-box;
+    background-color: white;
 }
 
 .form-group input:focus,
-.form-group textarea:focus {
+.form-group textarea:focus,
+.form-group select:focus {
     outline: none;
     border-color: #667eea;
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.form-select {
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'%3E%3Cpath fill='%23666' d='M2 0L0 2h4zM2 5L0 3h4z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 12px 12px;
+    padding-right: 40px;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+}
+
+.form-help {
+    display: block;
+    margin-top: 6px;
+    font-size: 0.8rem;
+    color: #6c757d;
+    line-height: 1.4;
 }
 
 .form-group textarea {

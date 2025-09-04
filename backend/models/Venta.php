@@ -10,6 +10,8 @@ class Venta {
     public $fecha_venta;
     public $total;
     public $tipo_pago;
+    public $monto_efectivo;
+    public $monto_transferencia;
     public $notas;
     public $anulada;
 
@@ -20,7 +22,7 @@ class Venta {
     // Obtener todas las ventas
     public function obtenerTodas() {
         $query = "SELECT v.id, v.cliente_id, v.usuario_id, v.fecha_venta, v.total, 
-                         v.tipo_pago, v.notas, v.anulada,
+                         v.tipo_pago, v.monto_efectivo, v.monto_transferencia, v.notas, v.anulada,
                          c.nombre_banda as cliente_nombre, c.contacto_nombre as cliente_apellido,
                          u.nombre_completo as usuario_nombre
                   FROM " . $this->table_name . " v
@@ -37,7 +39,7 @@ class Venta {
     // Obtener ventas con filtros avanzados y paginación
     public function obtenerConFiltros($filtros = []) {
         $baseQuery = "SELECT v.id, v.cliente_id, v.usuario_id, v.fecha_venta, v.total, 
-                             v.tipo_pago, v.notas, v.anulada,
+                             v.tipo_pago, v.monto_efectivo, v.monto_transferencia, v.notas, v.anulada,
                              c.nombre_banda as cliente_nombre, c.contacto_nombre as cliente_apellido,
                              u.nombre_completo as usuario_nombre
                       FROM " . $this->table_name . " v
@@ -129,7 +131,7 @@ class Venta {
     // Obtener venta por ID
     public function obtenerPorId($id) {
         $query = "SELECT v.id, v.cliente_id, v.usuario_id, v.fecha_venta, v.total, 
-                         v.tipo_pago, v.notas, v.anulada,
+                         v.tipo_pago, v.monto_efectivo, v.monto_transferencia, v.notas, v.anulada,
                          c.nombre_banda as cliente_nombre, c.contacto_nombre as cliente_apellido,
                          u.nombre_completo as usuario_nombre
                   FROM " . $this->table_name . " v
@@ -160,14 +162,67 @@ class Venta {
         return $stmt;
     }
 
+    // Validar datos de pago
+    private function validarPago() {
+        $errores = [];
+        
+        // Validar según tipo de pago
+        switch ($this->tipo_pago) {
+            case 'efectivo':
+                $this->monto_efectivo = $this->total;
+                $this->monto_transferencia = 0;
+                break;
+                
+            case 'transferencia':
+            case 'tarjeta':
+                $this->monto_efectivo = 0;
+                $this->monto_transferencia = $this->total;
+                break;
+                
+            case 'mixto':
+                // Validar que ambos montos estén definidos
+                if ($this->monto_efectivo === null || $this->monto_transferencia === null) {
+                    $errores[] = 'Los pagos mixtos deben especificar monto_efectivo y monto_transferencia';
+                }
+                
+                // Validar que ambos montos sean mayores a 0
+                if ($this->monto_efectivo <= 0 || $this->monto_transferencia <= 0) {
+                    $errores[] = 'Los montos de pago mixto deben ser mayores a cero';
+                }
+                
+                // Validar que la suma sea igual al total (con tolerancia de centavos)
+                $suma = $this->monto_efectivo + $this->monto_transferencia;
+                if (abs($suma - $this->total) > 0.01) {
+                    $errores[] = 'La suma de monto_efectivo y monto_transferencia debe ser igual al total';
+                }
+                
+                // Validar que no supere el total
+                if ($suma > $this->total) {
+                    $errores[] = 'La suma de los montos no puede superar el total a cobrar';
+                }
+                break;
+                
+            default:
+                $errores[] = 'Tipo de pago no válido';
+        }
+        
+        return $errores;
+    }
+    
     // Crear nueva venta
     public function crear() {
         try {
+            // Validar datos de pago
+            $errores = $this->validarPago();
+            if (!empty($errores)) {
+                throw new Exception('Errores de validación: ' . implode(', ', $errores));
+            }
+            
             $this->conn->beginTransaction();
             
             $query = "INSERT INTO " . $this->table_name . " 
-                      (cliente_id, usuario_id, fecha_venta, total, tipo_pago, notas) 
-                      VALUES (:cliente_id, :usuario_id, NOW(), :total, :tipo_pago, :notas)";
+                      (cliente_id, usuario_id, fecha_venta, total, tipo_pago, monto_efectivo, monto_transferencia, notas) 
+                      VALUES (:cliente_id, :usuario_id, NOW(), :total, :tipo_pago, :monto_efectivo, :monto_transferencia, :notas)";
             
             $stmt = $this->conn->prepare($query);
             
@@ -175,6 +230,8 @@ class Venta {
             $stmt->bindParam(':usuario_id', $this->usuario_id);
             $stmt->bindParam(':total', $this->total);
             $stmt->bindParam(':tipo_pago', $this->tipo_pago);
+            $stmt->bindParam(':monto_efectivo', $this->monto_efectivo);
+            $stmt->bindParam(':monto_transferencia', $this->monto_transferencia);
             $stmt->bindParam(':notas', $this->notas);
             
             if ($stmt->execute()) {

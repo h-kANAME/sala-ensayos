@@ -355,7 +355,7 @@ const FormularioReserva = ({ onReservaCreada, onReservaGuardada, onCancelar, fec
             <option value="">Selecciona una sala</option>
             {salas && salas.length > 0 && salas.map(sala => (
               <option key={sala.id} value={sala.id}>
-                {sala.nombre} - ${sala.tarifa_hora}/hora
+                {sala.nombre}
               </option>
             ))}
           </select>

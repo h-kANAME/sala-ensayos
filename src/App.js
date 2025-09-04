@@ -9,6 +9,7 @@ import ClienteEditar from './pages/ClienteEditar';
 import Productos from './pages/Productos';
 import ProductoNuevo from './pages/ProductoNuevo';
 import ProductoEditar from './pages/ProductoEditar';
+import Tarifas from './pages/Tarifas';
 import Ventas from './pages/Ventas';
 import VentaNueva from './pages/VentaNueva';
 import VentaEditar from './pages/VentaEditar';
@@ -90,6 +91,13 @@ function AppContent() {
         <Route path="/productos/editar/:id" element={
           <ProtectedRoute>
             <ProductoEditar />
+          </ProtectedRoute>
+        } />
+
+        {/* Módulo Tarifas - Solo para administradores */}
+        <Route path="/tarifas" element={
+          <ProtectedRoute>
+            <Tarifas />
           </ProtectedRoute>
         } />
 

@@ -137,7 +137,8 @@ class ReservaPublicaController {
                 $bandas[] = [
                     'id' => $row['id'],
                     'nombre_banda' => $row['nombre_banda'],
-                    'contacto_email' => $row['contacto_email']
+                    'contacto_email' => $row['contacto_email'],
+                    'tipo_agrupacion' => $row['tipo_agrupacion']
                 ];
             }
 
@@ -221,8 +222,7 @@ class ReservaPublicaController {
                     'nombre' => $row['nombre'],
                     'descripcion' => $row['descripcion'],
                     'capacidad' => $row['capacidad'],
-                    'equipamiento' => $row['equipamiento'],
-                    'tarifa_hora' => $row['tarifa_hora']
+                    'equipamiento' => $row['equipamiento']
                 ];
             }
 
@@ -283,8 +283,19 @@ class ReservaPublicaController {
             }
             $salaData = $stmtSala->fetch(PDO::FETCH_ASSOC);
 
-            // Calcular importe total
-            $importe_total = $salaData['tarifa_hora'] * $data['horas_reservadas'];
+            // Calcular importe total usando el nuevo sistema de tarifas
+            $calculo_precio = $reserva->calcularPrecioReserva($data['cliente_id'], $data['hora_inicio'], $data['hora_fin']);
+            
+            if (!$calculo_precio) {
+                error_log("ERROR: No se pudo calcular el precio con el nuevo sistema de tarifas");
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Error al calcular el precio de la reserva']);
+                return;
+            }
+            
+            $importe_total = $calculo_precio['precio'];
+            
+            error_log("Reserva pública - Tipo agrupación: {$calculo_precio['tipo_agrupacion']}, Duración: {$calculo_precio['duracion_horas']} horas, Precio: $importe_total");
 
             // Verificar disponibilidad EN TIEMPO REAL
             if (!$reserva->verificarDisponibilidad($data['sala_id'], $data['fecha_reserva'], 

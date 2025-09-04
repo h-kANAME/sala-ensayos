@@ -124,8 +124,7 @@ class Reserva
             r.*,
             c.nombre_banda as cliente_nombre,
             c.contacto_nombre as contacto_nombre,
-            s.nombre as sala_nombre,
-            s.tarifa_hora
+            s.nombre as sala_nombre
           FROM " . $this->table_name . " r
           LEFT JOIN clientes c ON r.cliente_id = c.id
           LEFT JOIN salas s ON r.sala_id = s.id
@@ -145,8 +144,7 @@ class Reserva
                     r.*,
                     c.nombre_banda as cliente_nombre,
                     c.contacto_nombre as contacto_nombre,
-                    s.nombre as sala_nombre,
-                    s.tarifa_hora
+                    s.nombre as sala_nombre
                   FROM " . $this->table_name . " r
                   LEFT JOIN clientes c ON r.cliente_id = c.id
                   LEFT JOIN salas s ON r.sala_id = s.id
@@ -270,7 +268,6 @@ class Reserva
                     c.contacto_telefono,
                     c.contacto_email,
                     s.nombre as sala_nombre,
-                    s.tarifa_hora,
                     s.descripcion as sala_descripcion
                   FROM " . $this->table_name . " r
                   LEFT JOIN clientes c ON r.cliente_id = c.id
@@ -678,7 +675,7 @@ class Reserva
     // Buscar bandas por nombre para autocompletado
     public function buscarBandas($termino)
     {
-        $query = "SELECT id, nombre_banda, contacto_email 
+        $query = "SELECT id, nombre_banda, contacto_email, tipo_agrupacion 
                   FROM clientes 
                   WHERE activo = 1 
                   AND nombre_banda LIKE :termino 
@@ -693,6 +690,116 @@ class Reserva
         $stmt->execute();
         
         return $stmt;
+    }
+
+    // Calcular precio usando el nuevo sistema de tarifas (sin funciones MySQL)
+    public function calcularPrecioReserva($cliente_id, $hora_inicio, $hora_fin)
+    {
+        error_log("=== CALCULANDO PRECIO CON NUEVO SISTEMA ===");
+        error_log("Cliente ID: $cliente_id, Hora inicio: $hora_inicio, Hora fin: $hora_fin");
+        
+        // Obtener el tipo de agrupación del cliente
+        $queryCliente = "SELECT tipo_agrupacion FROM clientes WHERE id = :cliente_id AND activo = 1";
+        $stmtCliente = $this->conn->prepare($queryCliente);
+        $stmtCliente->bindParam(":cliente_id", $cliente_id);
+        $stmtCliente->execute();
+        
+        if ($stmtCliente->rowCount() == 0) {
+            error_log("ERROR: Cliente no encontrado o inactivo");
+            return false;
+        }
+        
+        $cliente = $stmtCliente->fetch(PDO::FETCH_ASSOC);
+        $tipo_agrupacion = $cliente['tipo_agrupacion'];
+        
+        // Calcular duración en PHP
+        $duracion_horas = $this->calcularDuracionHoras($hora_inicio, $hora_fin);
+        
+        // Obtener precio usando consulta SQL
+        $precio_calculado = $this->obtenerPrecioTarifa($tipo_agrupacion, $duracion_horas);
+        
+        error_log("Tipo agrupación: $tipo_agrupacion");
+        error_log("Duración en horas: $duracion_horas");
+        error_log("Precio calculado: $precio_calculado");
+        error_log("=== FIN CÁLCULO PRECIO ===");
+        
+        return [
+            'tipo_agrupacion' => $tipo_agrupacion,
+            'duracion_horas' => $duracion_horas,
+            'precio' => $precio_calculado
+        ];
+    }
+
+    // Calcular duración en horas (método PHP)
+    private function calcularDuracionHoras($hora_inicio, $hora_fin)
+    {
+        $inicio = new DateTime($hora_inicio);
+        $fin = new DateTime($hora_fin);
+        
+        // Si hora_fin es menor que hora_inicio, agregar un día (cruce de medianoche)
+        if ($fin <= $inicio) {
+            $fin->add(new DateInterval('P1D'));
+        }
+        
+        $diff = $inicio->diff($fin);
+        $duracion_horas = $diff->h + ($diff->i / 60);
+        
+        // Redondear a 1 decimal
+        return round($duracion_horas, 1);
+    }
+
+    // Obtener precio desde tabla tarifas (método PHP)
+    private function obtenerPrecioTarifa($tipo_agrupacion, $duracion_horas)
+    {
+        // Buscar tarifa exacta (precio fijo)
+        $queryFijo = "SELECT precio_fijo FROM tarifas 
+                      WHERE tipo_agrupacion = :tipo_agrupacion 
+                        AND duracion_min = :duracion_horas 
+                        AND duracion_max = :duracion_horas 
+                        AND precio_fijo IS NOT NULL
+                        AND activo = TRUE
+                      LIMIT 1";
+                      
+        $stmtFijo = $this->conn->prepare($queryFijo);
+        $stmtFijo->bindParam(":tipo_agrupacion", $tipo_agrupacion);
+        $stmtFijo->bindParam(":duracion_horas", $duracion_horas);
+        $stmtFijo->execute();
+        
+        if ($stmtFijo->rowCount() > 0) {
+            $row = $stmtFijo->fetch(PDO::FETCH_ASSOC);
+            return $row['precio_fijo'];
+        }
+        
+        // Buscar tarifa variable (precio por hora)
+        $queryVariable = "SELECT precio_por_hora FROM tarifas 
+                         WHERE tipo_agrupacion = :tipo_agrupacion 
+                           AND duracion_min <= :duracion_horas 
+                           AND (duracion_max IS NULL OR duracion_max >= :duracion_horas)
+                           AND precio_por_hora IS NOT NULL
+                           AND activo = TRUE
+                         ORDER BY duracion_min DESC
+                         LIMIT 1";
+                         
+        $stmtVariable = $this->conn->prepare($queryVariable);
+        $stmtVariable->bindParam(":tipo_agrupacion", $tipo_agrupacion);
+        $stmtVariable->bindParam(":duracion_horas", $duracion_horas);
+        $stmtVariable->execute();
+        
+        if ($stmtVariable->rowCount() > 0) {
+            $row = $stmtVariable->fetch(PDO::FETCH_ASSOC);
+            return $row['precio_por_hora'] * $duracion_horas;
+        }
+        
+        // Si no se encuentra tarifa, retornar 0
+        error_log("ADVERTENCIA: No se encontró tarifa para tipo: $tipo_agrupacion, duración: $duracion_horas");
+        return 0;
+    }
+
+    // Método auxiliar para obtener precio por separado (para backwards compatibility)
+    public function obtenerPrecioCalculado($cliente_id, $hora_inicio, $hora_fin)
+    {
+        $calculo = $this->calcularPrecioReserva($cliente_id, $hora_inicio, $hora_fin);
+        return $calculo ? $calculo['precio'] : 0;
     }
 }
 ?>

@@ -85,7 +85,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             "contacto_nombre" => $row['contacto_nombre'],
             "sala_id" => $row['sala_id'],
             "sala_nombre" => $row['sala_nombre'],
-            "tarifa_hora" => (float)$row['tarifa_hora'],
             "fecha_reserva" => $row['fecha_reserva'],
             "hora_inicio" => $row['hora_inicio'],
             "hora_fin" => $row['hora_fin'],
@@ -192,7 +191,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit;
         }
 
-        // Calcular horas reservadas e importe
+        // Calcular horas reservadas e importe usando el nuevo sistema de tarifas
         $hora_inicio_obj = new DateTime($data->fecha_reserva . ' ' . $data->hora_inicio);
         $hora_fin_obj = new DateTime($data->fecha_reserva . ' ' . $data->hora_fin);
         
@@ -204,27 +203,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $diff = $hora_inicio_obj->diff($hora_fin_obj);
         $horas_reservadas = $diff->h + ($diff->i / 60);
 
-        error_log("Horas calculadas: $horas_reservadas");
+        error_log("Horas calculadas (método legacy): $horas_reservadas");
 
-        // Obtener tarifa de la sala
-        $tarifa_query = "SELECT tarifa_hora FROM salas WHERE id = :sala_id";
-        $tarifa_stmt = $db->prepare($tarifa_query);
-        $tarifa_stmt->bindParam(":sala_id", $data->sala_id);
-        $tarifa_stmt->execute();
-        $tarifa_row = $tarifa_stmt->fetch(PDO::FETCH_ASSOC);
+        // Usar el nuevo sistema de cálculo de precios
+        $calculo_precio = $reserva->calcularPrecioReserva($data->cliente_id, $data->hora_inicio, $data->hora_fin);
         
-        // CORREGIDO: Verificar que se obtuvo la tarifa
-        if (!$tarifa_row) {
-            error_log("ERROR: No se encontró la sala con ID: " . $data->sala_id);
+        if (!$calculo_precio) {
+            error_log("ERROR: No se pudo calcular el precio con el nuevo sistema");
             http_response_code(400);
-            echo json_encode(array("message" => "Sala no encontrada"));
+            echo json_encode(array("message" => "No se pudo calcular el precio de la reserva"));
             exit();
         }
         
-        $tarifa = $tarifa_row['tarifa_hora'];
-        $importe_total = $horas_reservadas * $tarifa;
+        $importe_total = $calculo_precio['precio'];
+        $tipo_agrupacion = $calculo_precio['tipo_agrupacion'];
+        $duracion_horas = $calculo_precio['duracion_horas'];
 
-        error_log("Tarifa: $tarifa, Importe total: $importe_total");
+        error_log("Nuevo sistema - Tipo agrupación: $tipo_agrupacion, Duración: $duracion_horas horas, Precio: $importe_total");
 
         // Asignar propiedades
         $reserva->cliente_id = $data->cliente_id;
@@ -333,7 +328,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
             exit;
         }
         
-        // Calcular horas reservadas e importe
+        // Calcular horas reservadas e importe usando el nuevo sistema de tarifas
         $hora_inicio_obj = new DateTime($data->fecha_reserva . ' ' . $data->hora_inicio);
         $hora_fin_obj = new DateTime($data->fecha_reserva . ' ' . $data->hora_fin);
         
@@ -344,21 +339,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
         $diff = $hora_inicio_obj->diff($hora_fin_obj);
         $horas_reservadas = $diff->h + ($diff->i / 60);
         
-        // Obtener tarifa de la sala
-        $tarifa_query = "SELECT tarifa_hora FROM salas WHERE id = :sala_id";
-        $tarifa_stmt = $db->prepare($tarifa_query);
-        $tarifa_stmt->bindParam(":sala_id", $data->sala_id);
-        $tarifa_stmt->execute();
-        $tarifa_row = $tarifa_stmt->fetch(PDO::FETCH_ASSOC);
+        error_log("Actualizando reserva - Horas calculadas (método legacy): $horas_reservadas");
+
+        // Usar el nuevo sistema de cálculo de precios
+        $calculo_precio = $reserva->calcularPrecioReserva($data->cliente_id, $data->hora_inicio, $data->hora_fin);
         
-        if (!$tarifa_row) {
+        if (!$calculo_precio) {
+            error_log("ERROR: No se pudo calcular el precio con el nuevo sistema");
             http_response_code(400);
-            echo json_encode(array("message" => "Sala no encontrada"));
+            echo json_encode(array("message" => "No se pudo calcular el precio de la reserva"));
             exit();
         }
         
-        $tarifa = $tarifa_row['tarifa_hora'];
-        $importe_total = $horas_reservadas * $tarifa;
+        $importe_total = $calculo_precio['precio'];
+        $tipo_agrupacion = $calculo_precio['tipo_agrupacion'];
+        $duracion_horas = $calculo_precio['duracion_horas'];
+
+        error_log("Actualizando reserva - Nuevo sistema - Tipo agrupación: $tipo_agrupacion, Duración: $duracion_horas horas, Precio: $importe_total");
         
         // Asignar propiedades
         $reserva->id = $id;

@@ -1,0 +1,350 @@
+.lista-tarifas {
+    padding: 30px;
+}
+
+.lista-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.estadisticas-resumen {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.stat-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 15px 20px;
+    border-radius: 12px;
+    text-align: center;
+    min-width: 100px;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.stat-card.activas {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+}
+
+.stat-card.inactivas {
+    background: linear-gradient(135deg, #fc4a1a 0%, #f7b733 100%);
+}
+
+.stat-card h3 {
+    margin: 0 0 5px 0;
+    font-size: 1.8rem;
+    font-weight: bold;
+}
+
+.stat-card p {
+    margin: 0;
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+.btn-nueva-tarifa {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.btn-nueva-tarifa:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+/* Sin tarifas */
+.sin-tarifas {
+    text-align: center;
+    padding: 60px 20px;
+    color: #7f8c8d;
+}
+
+.sin-tarifas-icon {
+    font-size: 4rem;
+    margin-bottom: 20px;
+}
+
+.sin-tarifas h3 {
+    color: #2c3e50;
+    margin-bottom: 10px;
+    font-size: 1.5rem;
+}
+
+.sin-tarifas p {
+    margin-bottom: 30px;
+    font-size: 1.1rem;
+}
+
+.btn-crear-primera {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1.1rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-crear-primera:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(17, 153, 142, 0.4);
+}
+
+/* Grupos de tarifas */
+.grupo-tarifas {
+    margin-bottom: 40px;
+}
+
+.grupo-header {
+    margin-bottom: 20px;
+}
+
+.grupo-header h3 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #2c3e50;
+    font-size: 1.3rem;
+    margin: 0;
+}
+
+.tipo-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.tipo-badge.standard {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.tipo-badge.extended {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+}
+
+.contador {
+    color: #7f8c8d;
+    font-size: 0.9rem;
+    font-weight: normal;
+}
+
+/* Grid de tarifas */
+.tarifas-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
+}
+
+.tarifa-card {
+    background: white;
+    border: 1px solid #e8e8e8;
+    border-radius: 12px;
+    padding: 20px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.tarifa-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    border-color: #667eea;
+}
+
+.tarifa-card.inactiva {
+    background: #f8f9fa;
+    border-color: #dee2e6;
+    opacity: 0.7;
+}
+
+.tarifa-card.inactiva:hover {
+    transform: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.tarifa-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.duracion {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.estado-badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.estado-badge.activa {
+    background: #d4edda;
+    color: #155724;
+}
+
+.estado-badge.inactiva {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.tarifa-precios {
+    margin-bottom: 15px;
+}
+
+.precio-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    padding: 8px 12px;
+    border-radius: 8px;
+}
+
+.precio-item.fijo {
+    background: #e8f5e8;
+    border-left: 4px solid #28a745;
+}
+
+.precio-item.variable {
+    background: #fff3cd;
+    border-left: 4px solid #ffc107;
+}
+
+.precio-item label {
+    font-size: 0.9rem;
+    color: #6c757d;
+    font-weight: 500;
+}
+
+.precio-item .precio {
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: #2c3e50;
+}
+
+.tarifa-meta {
+    margin-bottom: 15px;
+    padding-top: 10px;
+    border-top: 1px solid #f1f1f1;
+}
+
+.tarifa-meta small {
+    color: #6c757d;
+    font-size: 0.8rem;
+}
+
+.tarifa-acciones {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-editar, .btn-eliminar {
+    flex: 1;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.btn-editar {
+    background: #e3f2fd;
+    color: #1976d2;
+}
+
+.btn-editar:hover {
+    background: #bbdefb;
+    transform: translateY(-1px);
+}
+
+.btn-eliminar {
+    background: #ffebee;
+    color: #d32f2f;
+}
+
+.btn-eliminar:hover {
+    background: #ffcdd2;
+    transform: translateY(-1px);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .lista-tarifas {
+        padding: 20px;
+    }
+    
+    .lista-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .estadisticas-resumen {
+        justify-content: center;
+    }
+    
+    .stat-card {
+        min-width: 80px;
+        padding: 12px 15px;
+    }
+    
+    .stat-card h3 {
+        font-size: 1.4rem;
+    }
+    
+    .tarifas-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .grupo-header h3 {
+        flex-wrap: wrap;
+        gap: 5px;
+    }
+    
+    .tarifa-acciones {
+        flex-direction: column;
+    }
+}
+
+/* Animaciones */
+.tarifa-card {
+    animation: slideInUp 0.3s ease-out;
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

@@ -9,6 +9,7 @@ class Cliente {
     public $contacto_nombre;
     public $contacto_email;
     public $contacto_telefono;
+    public $tipo_agrupacion;
     public $direccion;
     public $notas;
     public $activo;
@@ -23,7 +24,7 @@ class Cliente {
         $query = "INSERT INTO " . $this->table_name . "
                 SET nombre_banda=:nombre_banda, contacto_nombre=:contacto_nombre,
                     contacto_email=:contacto_email, contacto_telefono=:contacto_telefono,
-                    direccion=:direccion, notas=:notas, activo=:activo";
+                    tipo_agrupacion=:tipo_agrupacion, direccion=:direccion, notas=:notas, activo=:activo";
 
         $stmt = $this->conn->prepare($query);
 
@@ -32,6 +33,7 @@ class Cliente {
         $this->contacto_nombre = htmlspecialchars(strip_tags($this->contacto_nombre));
         $this->contacto_email = htmlspecialchars(strip_tags($this->contacto_email));
         $this->contacto_telefono = htmlspecialchars(strip_tags($this->contacto_telefono));
+        $this->tipo_agrupacion = htmlspecialchars(strip_tags($this->tipo_agrupacion));
         $this->direccion = htmlspecialchars(strip_tags($this->direccion));
         $this->notas = htmlspecialchars(strip_tags($this->notas));
         $this->activo = htmlspecialchars(strip_tags($this->activo));
@@ -41,6 +43,7 @@ class Cliente {
         $stmt->bindParam(":contacto_nombre", $this->contacto_nombre);
         $stmt->bindParam(":contacto_email", $this->contacto_email);
         $stmt->bindParam(":contacto_telefono", $this->contacto_telefono);
+        $stmt->bindParam(":tipo_agrupacion", $this->tipo_agrupacion);
         $stmt->bindParam(":direccion", $this->direccion);
         $stmt->bindParam(":notas", $this->notas);
         $stmt->bindParam(":activo", $this->activo);
@@ -80,7 +83,7 @@ class Cliente {
         $query = "UPDATE " . $this->table_name . "
                 SET nombre_banda=:nombre_banda, contacto_nombre=:contacto_nombre,
                     contacto_email=:contacto_email, contacto_telefono=:contacto_telefono,
-                    direccion=:direccion, notas=:notas, activo=:activo
+                    tipo_agrupacion=:tipo_agrupacion, direccion=:direccion, notas=:notas, activo=:activo
                 WHERE id=:id";
 
         $stmt = $this->conn->prepare($query);
@@ -90,6 +93,7 @@ class Cliente {
         $this->contacto_nombre = htmlspecialchars(strip_tags($this->contacto_nombre));
         $this->contacto_email = htmlspecialchars(strip_tags($this->contacto_email));
         $this->contacto_telefono = htmlspecialchars(strip_tags($this->contacto_telefono));
+        $this->tipo_agrupacion = htmlspecialchars(strip_tags($this->tipo_agrupacion));
         $this->direccion = htmlspecialchars(strip_tags($this->direccion));
         $this->notas = htmlspecialchars(strip_tags($this->notas));
         $this->activo = htmlspecialchars(strip_tags($this->activo));
@@ -100,6 +104,7 @@ class Cliente {
         $stmt->bindParam(":contacto_nombre", $this->contacto_nombre);
         $stmt->bindParam(":contacto_email", $this->contacto_email);
         $stmt->bindParam(":contacto_telefono", $this->contacto_telefono);
+        $stmt->bindParam(":tipo_agrupacion", $this->tipo_agrupacion);
         $stmt->bindParam(":direccion", $this->direccion);
         $stmt->bindParam(":notas", $this->notas);
         $stmt->bindParam(":activo", $this->activo);

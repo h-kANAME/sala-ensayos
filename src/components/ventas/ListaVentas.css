@@ -494,3 +494,27 @@
         margin-top: 0.25rem;
     }
 }
+
+/* Estilos para pagos mixtos en lista */
+.tipo-pago.mixto {
+    background-color: #6f42c1;
+    color: white;
+    font-size: 0.8em;
+    max-width: 200px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.pago-mixto-detalle {
+    margin-top: 5px;
+    padding: 5px;
+    background: #f8f9fa;
+    border-radius: 3px;
+    border-left: 3px solid #6f42c1;
+}
+
+.pago-mixto-detalle small {
+    color: #6c757d;
+    line-height: 1.3;
+}

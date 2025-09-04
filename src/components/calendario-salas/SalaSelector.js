@@ -17,9 +17,6 @@ const SalaSelector = ({ salas, salaSeleccionada, onSalaChange }) => {
                 {sala.descripcion || 'Sala de ensayos'}
               </p>
               <div className="sala-detalles">
-                <span className="tarifa">
-                  💰 ${sala.tarifa_hora}/hora
-                </span>
                 {sala.equipamiento && (
                   <span className="equipamiento">
                     🎵 {sala.equipamiento}

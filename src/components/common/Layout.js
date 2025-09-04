@@ -37,10 +37,11 @@ const Layout = ({ children }) => {
                     <li><Link to="/dashboard" onClick={() => setNavCollapsed(true)}>📊 Dashboard</Link></li>
                     <li><Link to="/clientes" onClick={() => setNavCollapsed(true)}>👥 Clientes</Link></li>
                     
-                    {/* Solo admins pueden acceder a Productos y Reportes */}
+                    {/* Solo admins pueden acceder a Productos, Tarifas y Reportes */}
                     {isAdmin && (
                         <>
                             <li><Link to="/productos" onClick={() => setNavCollapsed(true)}>📦 Productos</Link></li>
+                            <li><Link to="/tarifas" onClick={() => setNavCollapsed(true)}>💰 Tarifas</Link></li>
                             <li><a href="#reportes" onClick={() => setNavCollapsed(true)}>📈 Reportes</a></li>
                         </>
                     )}

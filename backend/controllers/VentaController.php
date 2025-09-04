@@ -100,6 +100,8 @@ switch ($_SERVER['REQUEST_METHOD']) {
                         'fecha_venta' => $fecha_venta,
                         'total' => floatval($total),
                         'tipo_pago' => $tipo_pago,
+                        'monto_efectivo' => isset($monto_efectivo) ? floatval($monto_efectivo) : null,
+                        'monto_transferencia' => isset($monto_transferencia) ? floatval($monto_transferencia) : null,
                         'notas' => $notas,
                         'anulada' => boolval($anulada)
                     );
@@ -149,6 +151,8 @@ switch ($_SERVER['REQUEST_METHOD']) {
                             'fecha_venta' => $fecha_venta,
                             'total' => floatval($total),
                             'tipo_pago' => $tipo_pago,
+                            'monto_efectivo' => isset($monto_efectivo) ? floatval($monto_efectivo) : null,
+                            'monto_transferencia' => isset($monto_transferencia) ? floatval($monto_transferencia) : null,
                             'notas' => $notas,
                             'anulada' => boolval($anulada)
                         );
@@ -178,6 +182,8 @@ switch ($_SERVER['REQUEST_METHOD']) {
                             'fecha_venta' => $fecha_venta,
                             'total' => floatval($total),
                             'tipo_pago' => $tipo_pago,
+                            'monto_efectivo' => isset($monto_efectivo) ? floatval($monto_efectivo) : null,
+                            'monto_transferencia' => isset($monto_transferencia) ? floatval($monto_transferencia) : null,
                             'notas' => $notas,
                             'anulada' => boolval($anulada)
                         );
@@ -314,7 +320,15 @@ switch ($_SERVER['REQUEST_METHOD']) {
                 $venta->usuario_id = $data['usuario_id'];
                 $venta->total = $data['total'];
                 $venta->tipo_pago = $data['tipo_pago'];
+                $venta->monto_efectivo = isset($data['monto_efectivo']) ? $data['monto_efectivo'] : null;
+                $venta->monto_transferencia = isset($data['monto_transferencia']) ? $data['monto_transferencia'] : null;
                 $venta->notas = $data['notas'] ?? '';
+
+                // Debug: Verificar datos recibidos para pagos mixtos
+                error_log('VentaController CREAR - tipo_pago: ' . $data['tipo_pago']);
+                error_log('VentaController CREAR - monto_efectivo: ' . ($data['monto_efectivo'] ?? 'NULL'));
+                error_log('VentaController CREAR - monto_transferencia: ' . ($data['monto_transferencia'] ?? 'NULL'));
+                error_log('VentaController CREAR - total: ' . $data['total']);
 
                 $venta_id = $venta->crear();
                 

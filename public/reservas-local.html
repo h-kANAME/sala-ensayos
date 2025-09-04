@@ -407,7 +407,7 @@
             let html = '<div style="border: 1px solid #ddd; border-radius: 8px; margin-top: 10px;">';
             bands.forEach(band => {
                 html += `
-                    <div onclick="selectBand(${band.id}, '${band.nombre_banda}', '${band.contacto_email}')" 
+                    <div onclick="selectBand(${band.id}, '${band.nombre_banda}', '${band.contacto_email}', '${band.tipo_agrupacion || 'Standard'}')" 
                          style="padding: 15px; border-bottom: 1px solid #f0f0f0; cursor: pointer; transition: background 0.2s;"
                          onmouseover="this.style.background='#f8f9fa'"
                          onmouseout="this.style.background='white'">
@@ -422,8 +422,8 @@
         }
 
         // Seleccionar banda
-        function selectBand(id, nombre, email) {
-            selectedBand = { id, nombre_banda: nombre, contacto_email: email };
+        function selectBand(id, nombre, email, tipo_agrupacion) {
+            selectedBand = { id, nombre_banda: nombre, contacto_email: email, tipo_agrupacion: tipo_agrupacion || 'Standard' };
             showStep(STEPS.SELECT_DATETIME);
         }
 
@@ -556,12 +556,22 @@
                     
                 case STEPS.VERIFICATION:
                     const reservaData = arguments[1]; // Datos pasados como segundo parámetro
+                    
+                    // Calcular precio real
+                    const duracionHoras = calcularDuracion(selectedSlot.hora_inicio.substring(0, 5), selectedSlot.hora_fin.substring(0, 5));
+                    const tipoAgrupacion = selectedBand.tipo_agrupacion || 'Standard'; // Default a Standard si no está definido
+                    
+                    const precioCalculado = calcularPrecioReserva(tipoAgrupacion, duracionHoras);
+                    
+                    const precioFormateado = formatearPrecio(precioCalculado);
+                    
                     appDiv.innerHTML = `
                         <div style="padding: 20px 0;">
                             <h2>Paso 3: Verificación por email</h2>
                             <div style="background: #e8f5e8; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #28a745;">
                                 <h3 style="margin: 0 0 15px 0;">Resumen de tu reserva</h3>
                                 <p><strong>Banda:</strong> ${selectedBand.nombre_banda}</p>
+                                <p><strong>Tipo:</strong> <span class="badge ${tipoAgrupacion === 'Extended' ? 'badge-extended' : 'badge-standard'}">${tipoAgrupacion}</span></p>
                                 <p><strong>Email:</strong> ${selectedBand.contacto_email}</p>
                                 <p><strong>Sala:</strong> ${selectedSala.nombre}</p>
                                 <p><strong>Fecha:</strong> ${new Date(selectedDate).toLocaleDateString('es', { 
@@ -570,8 +580,8 @@
                                     month: 'long', 
                                     day: 'numeric' 
                                 })}</p>
-                                <p><strong>Horario:</strong> ${selectedSlot.hora_inicio.substring(0, 5)} - ${selectedSlot.hora_fin.substring(0, 5)}</p>
-                                <p><strong>Importe total:</strong> $${selectedSala.tarifa_hora}</p>
+                                <p><strong>Horario:</strong> ${selectedSlot.hora_inicio.substring(0, 5)} - ${selectedSlot.hora_fin.substring(0, 5)} <small style="color: #666;">(${duracionHoras}h)</small></p>
+                                <p><strong>Importe:</strong> <span id="precio-calculado" style="color: #28a745; font-weight: bold; font-size: 1.1em;">${precioFormateado}</span></p>
                             </div>
                             
                             <div id="verification-status">
@@ -634,7 +644,7 @@
                                             day: 'numeric' 
                                         })}</p>
                                         <p><strong>Horario:</strong> ${selectedSlot.hora_inicio.substring(0, 5)} - ${selectedSlot.hora_fin.substring(0, 5)}</p>
-                                        <p><strong>Importe:</strong> $${selectedSala.tarifa_hora}</p>
+                                        <p><strong>Importe:</strong> Calculado según tipo de agrupación</p>
                                     </div>
                                 </div>
                                 
@@ -722,7 +732,7 @@
             
             salas.forEach(sala => {
                 html += `
-                    <div onclick="selectSala(${sala.id}, '${sala.nombre}', ${sala.tarifa_hora})" 
+                    <div onclick="selectSala(${sala.id}, '${sala.nombre}')" 
                          class="sala-card"
                          style="border: 2px solid #e9ecef; border-radius: 10px; padding: 20px; cursor: pointer; transition: all 0.3s; background: white;"
                          onmouseover="this.style.borderColor='#667eea'; this.style.transform='translateY(-2px)'"
@@ -730,7 +740,6 @@
                         <h4 style="margin: 0 0 10px 0; color: #333;">${sala.nombre}</h4>
                         <p style="margin: 5px 0; color: #666; font-size: 0.9rem;">${sala.descripcion}</p>
                         <p style="margin: 5px 0; color: #666; font-size: 0.9rem;"><strong>Capacidad:</strong> ${sala.capacidad} personas</p>
-                        <p style="margin: 5px 0; color: #667eea; font-weight: bold;">$${sala.tarifa_hora}/hora</p>
                         <p style="margin: 10px 0 0 0; color: #666; font-size: 0.85rem;">${sala.equipamiento}</p>
                     </div>
                 `;
@@ -740,8 +749,8 @@
         }
 
         // Seleccionar sala
-        function selectSala(id, nombre, tarifa) {
-            selectedSala = { id, nombre, tarifa_hora: tarifa };
+        function selectSala(id, nombre) {
+            selectedSala = { id, nombre };
             
             // Marcar sala seleccionada visualmente
             document.querySelectorAll('.sala-card').forEach(card => {
@@ -924,7 +933,64 @@
             const fin = new Date(`2000-01-01 ${horaFin}:00`);
             
             const diferencia = (fin - inicio) / (1000 * 60 * 60); // Diferencia en horas
-            return diferencia;
+            return Math.round(diferencia * 10) / 10; // Redondear a 1 decimal
+        }
+
+        // Tabla de tarifas (replicando la lógica del backend)
+        const tarifas = {
+            'Standard': {
+                1.0: { precio_fijo: 11000 },
+                1.5: { precio_fijo: 13000 },
+                2.0: { precio_fijo: 18000 },
+                variable: { min_duracion: 3.0, precio_por_hora: 8500 }
+            },
+            'Extended': {
+                1.0: { precio_fijo: 13000 },
+                1.5: { precio_fijo: 16000 },
+                2.0: { precio_fijo: 20000 },
+                variable: { min_duracion: 3.0, precio_por_hora: 9000 }
+            }
+        };
+
+        // Calcular precio de reserva
+        function calcularPrecioReserva(tipoAgrupacion, duracionHoras) {
+            const tarifaTipo = tarifas[tipoAgrupacion];
+            if (!tarifaTipo) {
+                console.error('Tipo de agrupación no encontrado:', tipoAgrupacion);
+                return 0;
+            }
+
+            // Buscar tarifa fija exacta
+            if (tarifaTipo[duracionHoras] && tarifaTipo[duracionHoras].precio_fijo) {
+                return tarifaTipo[duracionHoras].precio_fijo;
+            }
+
+            // Si la duración es mayor o igual al mínimo para tarifa variable
+            if (duracionHoras >= tarifaTipo.variable.min_duracion) {
+                return duracionHoras * tarifaTipo.variable.precio_por_hora;
+            }
+
+            // Para duraciones no exactas menores a 3h, calcular proporcional basado en el siguiente precio fijo
+            if (duracionHoras < 1.0) {
+                return (duracionHoras / 1.0) * tarifaTipo[1.0].precio_fijo;
+            } else if (duracionHoras < 1.5) {
+                return (duracionHoras / 1.5) * tarifaTipo[1.5].precio_fijo;
+            } else if (duracionHoras < 2.0) {
+                return (duracionHoras / 2.0) * tarifaTipo[2.0].precio_fijo;
+            } else {
+                // Para duraciones entre 2h y 3h, usar tarifa variable
+                return duracionHoras * tarifaTipo.variable.precio_por_hora;
+            }
+        }
+
+        // Formatear precio para mostrar
+        function formatearPrecio(precio) {
+            return new Intl.NumberFormat('es-AR', {
+                style: 'currency',
+                currency: 'ARS',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(precio);
         }
 
         // Verificar si hay conflicto con horarios ocupados
@@ -969,10 +1035,6 @@
                 return;
             }
             
-            if (duracion % 1 !== 0) {
-                mostrarValidationMessage('Solo se permiten reservas por horas completas (ejemplo: 1h, 2h, 3h)', 'error');
-                return;
-            }
             
             // Verificar conflictos con horarios ocupados
             if (verificarConflictoHorarios(horaInicio, horaFin)) {

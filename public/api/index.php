@@ -45,10 +45,22 @@ if (file_exists('../../backend/config/environment.php')) {
         }
         
         public static function setCorsHeaders() {
+            // Verificar que los headers no hayan sido enviados
+            if (headers_sent()) {
+                error_log("WARNING: Headers ya enviados, no se pueden configurar CORS");
+                return;
+            }
+            
             $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
             $allowedOrigins = self::getAllowedOrigins();
             
-            if (in_array($origin, $allowedOrigins)) {
+            error_log("CORS Debug - Origin: '$origin'");
+            error_log("CORS Debug - Allowed origins: " . implode(', ', $allowedOrigins));
+            
+            // En desarrollo, ser más permisivo
+            if (self::isDevelopment()) {
+                header("Access-Control-Allow-Origin: *");
+            } elseif (in_array($origin, $allowedOrigins)) {
                 header("Access-Control-Allow-Origin: $origin");
             }
             
@@ -222,6 +234,16 @@ switch(true) {
         if (Environment::isDevelopment()) error_log("Redirigiendo a ProductoController");
         try {
             include_once resolveBackendPath('controllers/ProductoController.php');
+        } catch (Exception $e) {
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => 'Error del servidor: ' . $e->getMessage()]);
+        }
+        break;
+        
+    case strpos($path, 'tarifas') === 0:
+        if (Environment::isDevelopment()) error_log("Redirigiendo a TarifaController");
+        try {
+            include_once resolveBackendPath('controllers/TarifaController.php');
         } catch (Exception $e) {
             http_response_code(500);
             echo json_encode(['success' => false, 'message' => 'Error del servidor: ' . $e->getMessage()]);

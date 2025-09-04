@@ -71,6 +71,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $cliente->contacto_nombre = $data->contacto_nombre;
         $cliente->contacto_email = $data->contacto_email ?? '';
         $cliente->contacto_telefono = $data->contacto_telefono ?? '';
+        $cliente->tipo_agrupacion = $data->tipo_agrupacion ?? 'Standard';
         $cliente->direccion = $data->direccion ?? '';
         $cliente->notas = $data->notas ?? '';
         $cliente->activo = 1;
@@ -109,6 +110,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
         $cliente->contacto_nombre = $data->contacto_nombre;
         $cliente->contacto_email = $data->contacto_email ?? '';
         $cliente->contacto_telefono = $data->contacto_telefono ?? '';
+        $cliente->tipo_agrupacion = $data->tipo_agrupacion ?? 'Standard';
         $cliente->direccion = $data->direccion ?? '';
         $cliente->notas = $data->notas ?? '';
         $cliente->activo = $data->activo ?? 1;
